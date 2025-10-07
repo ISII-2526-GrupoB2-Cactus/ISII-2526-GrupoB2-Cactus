@@ -24,6 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     }
 
 
+    public DbSet<PurchaseItem> PurchaseItem { get; set; }
     public DbSet<RentDevice> RentDevice { get; set; }
     public DbSet<Rental> Rental { get; set; }
     public DbSet<Device> Device { get; set; }
