@@ -24,7 +24,7 @@ namespace AppForSEII2526.API.Models
             ReviewTitle = reviewTitle;
             ReviewItems = reviewItems;
         }
-
+        [Key]
         public int CustomerId { get; set; }
 
         [Range(1, 200, ErrorMessage = "Minimum 1, Maximum 200")]
