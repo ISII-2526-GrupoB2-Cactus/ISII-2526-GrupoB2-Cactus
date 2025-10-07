@@ -24,6 +24,8 @@ namespace AppForSEII2526.API.Models
             ReviewTitle = reviewTitle;
             ReviewItems = reviewItems;
         }
+
+
         [Key]
         public int CustomerId { get; set; }
 
