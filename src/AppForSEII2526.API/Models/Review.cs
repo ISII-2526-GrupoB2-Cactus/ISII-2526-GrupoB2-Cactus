@@ -1,16 +1,20 @@
 ﻿
+using System.Collections.Generic;
+
 namespace AppForSEII2526.API.Models
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+
     public class Review
     {
-
-
         public Review()
         {
-            //Constructor vacio
+            ReviewItems = new List<ReviewItem>();
         }
 
-        public Review(int customerId, int customerCount, DateTime dateOfReview, int overallRating, bool reviewed, string reviewTitle, ReviewItem reviewItem)
+        public Review(int customerId, int customerCount, DateTime dateOfReview, int overallRating, bool reviewed, string reviewTitle, IList<ReviewItem> reviewItems)
         {
             CustomerId = customerId;
             CustomerCount = customerCount;
@@ -18,7 +22,7 @@ namespace AppForSEII2526.API.Models
             OverallRating = overallRating;
             Reviewed = reviewed;
             ReviewTitle = reviewTitle;
-            ReviewItem = reviewItem;
+            ReviewItems = reviewItems;
         }
 
         public int CustomerId { get; set; }
@@ -26,6 +30,9 @@ namespace AppForSEII2526.API.Models
         [Range(1, 200, ErrorMessage = "Minimum 1, Maximum 200")]
         public int CustomerCount { get; set; }
 
+        [DataType(DataType.Date)]
+        [Display(Name = "Date of Review")]
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime DateOfReview { get; set; }
 
         [Range(1, 200, ErrorMessage = "Minimum 1, Maximum 200")]
@@ -36,7 +43,7 @@ namespace AppForSEII2526.API.Models
         [StringLength(50, ErrorMessage = "Name can be neither longer than 50 characters nor shorter than 10.", MinimumLength = 10)]
         public string ReviewTitle { get; set; }
 
-        public ReviewItem ReviewItem { get; set; } //Atributo para la relacion
-
+        public IList<ReviewItem> ReviewItems { get; set; }
     }
+
 }
