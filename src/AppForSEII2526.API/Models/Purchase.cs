@@ -35,8 +35,6 @@ namespace AppForSEII2526.API.Models
         [Key]
         public int Id { get; set; }
 
-
-
         [Required, StringLength(50, ErrorMessage = "La direccion no puede tener más de 50 caracteres")]
         public string DeliveryAddress { get; set; }
 
