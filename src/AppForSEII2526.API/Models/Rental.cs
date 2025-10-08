@@ -23,19 +23,14 @@ namespace AppForSEII2526.API.Models
         {
         }
 
-        public Rental(int id, string deliveryAddress, string name, string surname, decimal totalPrice, DateTime rentalDate, DateTime rentalDateFrom, DateTime rentalDateTo, PaymentMethodType paymentMethod, RentDevice rentDevice, ApplicationUser customer)
+        public Rental(string deliveryAddress, decimal totalPrice, DateTime rentalDate, DateTime rentalDateFrom, DateTime rentalDateTo, PaymentMethodType paymentMethod)
         {
-            Id = id;
             DeliveryAddress = deliveryAddress;
-            Name = name;
-            Surname = surname;
             TotalPrice = totalPrice;
             RentalDate = rentalDate;
             RentalDateFrom = rentalDateFrom;
             RentalDateTo = rentalDateTo;
             PaymentMethod = paymentMethod;
-            RentDevice = rentDevice;
-            Customer = customer;
         }
 
 
@@ -48,11 +43,6 @@ namespace AppForSEII2526.API.Models
         [StringLength(50, ErrorMessage = "La direccion debe tener entre 10 y 50 caracteres", MinimumLength = 10)]
         public string DeliveryAddress { get; set; }
 
-        [StringLength(50, ErrorMessage = "El nombre del cliente debe tener entre 2 y 50 caracteres", MinimumLength = 2)]
-        public string Name { get; set; }
-
-        [StringLength(50, ErrorMessage = "El apellido del cliente debe tener entre 2 y 50 caracteres", MinimumLength = 2)]
-        public string Surname { get; set; }
 
         [Range(0.01, 9999999.99, ErrorMessage = "El costo debe estar entre 0.01 y 9,999,999.99")]
         [Precision(10, 2)]
