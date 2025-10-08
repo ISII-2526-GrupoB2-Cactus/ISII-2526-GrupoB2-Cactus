@@ -54,8 +54,8 @@ namespace AppForSEII2526.API.Models
 
         public IList<PurchaseItem> PurchaseItems { get; set; } //esto es lo que me genera la relacion
 
-        
 
+        public ApplicationUser ApplicationUser { get; set; }//relacion con la clase applicationuser
 
 
 
