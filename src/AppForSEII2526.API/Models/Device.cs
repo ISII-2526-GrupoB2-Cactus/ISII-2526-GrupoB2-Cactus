@@ -40,6 +40,10 @@ namespace AppForSEII2526.API.Models
         [StringLength(50, ErrorMessage = "La marca no puede tener más de 50 caracteres")]
         public string Brand { get; set; }
 
+        [StringLength(50, ErrorMessage = "La descripcion no puede tener más de 50 caracteres")]
+        public string? Description { get; set; }
+
+
         [StringLength(50, ErrorMessage = "El color no puede tener más de 50 caracteres")]
         public string Color { get; set; }
 
