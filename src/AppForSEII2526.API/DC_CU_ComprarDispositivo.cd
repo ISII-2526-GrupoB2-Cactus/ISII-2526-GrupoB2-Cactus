@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="AppForSEII2526.API.Models.Model">
-    <Position X="5.5" Y="0.75" Width="1.5" />
+    <Position X="3" Y="4" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAQAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Model.cs</FileName>
@@ -17,18 +17,19 @@
       <FileName>Models\PurchaseItem.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
-      <Property Name="Device" />
       <Property Name="Purchase" />
+      <Property Name="Device" />
     </ShowAsAssociation>
   </Class>
   <Class Name="AppForSEII2526.API.Models.Purchase">
     <Position X="9" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAADAAAAAABAAAAQAKAAAAAAAAAAQAQAAAAAAAAAAAE=</HashCode>
+      <HashCode>AAADAAAAAABAAAAQAKAAAAAAAAAAQAQAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Purchase.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
       <Property Name="PaymentMethod" />
+      <Property Name="ApplicationUser" />
     </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="PurchaseItems" />
@@ -44,7 +45,7 @@
       </Enum>
     </NestedTypes>
     <TypeIdentifier>
-      <HashCode>AAASAAQCBABAAABAAQAAAAQAAAAgAAAAAAgAgBABAAA=</HashCode>
+      <HashCode>AAASAAQCBABgAABAAQAAAAQAAAAgAAAAAAgAgBABAAA=</HashCode>
       <FileName>Models\Device.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -52,6 +53,16 @@
     </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="PurchaseItems" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.ApplicationUser">
+    <Position X="5.75" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAEAAAQAAAAAAAAAAAAAAAAAACAAQAAAAE=</HashCode>
+      <FileName>Models\ApplicationUser.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Purchase" />
     </ShowAsCollectionAssociation>
   </Class>
   <Enum Name="AppForSEII2526.API.Models.PaymentMethod">
