@@ -45,6 +45,8 @@ namespace AppForSEII2526.API.Models
         public string ReviewTitle { get; set; }
 
         public IList<ReviewItem> ReviewItems { get; set; } //Atributo para relacion
+
+        public ApplicationUser ApplicationUser { get; set; } //Atributo con claser relacion ApplicationUser
     }
 
 }
