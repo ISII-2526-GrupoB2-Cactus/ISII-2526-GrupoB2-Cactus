@@ -23,9 +23,11 @@ namespace AppForSEII2526.API.Models
         {
         }
 
-        public Rental(string deliveryAddress, decimal totalPrice, DateTime rentalDate, DateTime rentalDateFrom, DateTime rentalDateTo, PaymentMethodType paymentMethod)
+        public Rental(string deliveryAddress, string nameCustomer, string surnameCustomer, decimal totalPrice, DateTime rentalDate, DateTime rentalDateFrom, DateTime rentalDateTo, PaymentMethodType paymentMethod)
         {
             DeliveryAddress = deliveryAddress;
+            NameCustomer = nameCustomer;
+            SurnameCustomer = surnameCustomer;
             TotalPrice = totalPrice;
             RentalDate = rentalDate;
             RentalDateFrom = rentalDateFrom;
@@ -43,6 +45,11 @@ namespace AppForSEII2526.API.Models
         [StringLength(50, ErrorMessage = "La direccion debe tener entre 10 y 50 caracteres", MinimumLength = 10)]
         public string DeliveryAddress { get; set; }
 
+        [StringLength(50, ErrorMessage = "El nombre del cliente debe tener entre 2 y 50 caracteres", MinimumLength = 2)]
+        public string NameCustomer { get; set; }
+
+        [StringLength(50, ErrorMessage = "El apellido del cliente debe tener entre 2 y 50 caracteres", MinimumLength = 2)]
+        public string SurnameCustomer { get; set; }
 
         [Range(0.01, 9999999.99, ErrorMessage = "El costo debe estar entre 0.01 y 9,999,999.99")]
         [Precision(10, 2)]
@@ -68,11 +75,7 @@ namespace AppForSEII2526.API.Models
         // Relación uno-a-muchos: Un Rental puede tener múltiples RentalItems
         public RentDevice RentDevice { get; set; }
 
-        //Si el cliente es eliminado, el alquiler relacionado no se eliminará
-        [DeleteBehavior(DeleteBehavior.NoAction)]
-        public ApplicationUser Customer { get; set; }
-
-
+        
 
 
         //---------------------------------------------------------------
