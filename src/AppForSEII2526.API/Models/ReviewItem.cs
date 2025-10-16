@@ -1,6 +1,7 @@
 ﻿
 namespace AppForSEII2526.API.Models
 {
+    [PrimaryKey(nameof(DeviceId), nameof(ReviewId))]
     public class ReviewItem
     {
 
@@ -18,7 +19,7 @@ namespace AppForSEII2526.API.Models
         }
 
 
-        [StringLength(100, ErrorMessage = "Los comentarios no pueden tener mas de 100 caracteres")] 
+        [StringLength(50, ErrorMessage = "Los comentarios no pueden tener mas de 50 caracteres")] 
         public string? Comments { get; set; }
 
         [Required]
