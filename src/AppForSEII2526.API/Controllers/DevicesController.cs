@@ -1,3 +1,9 @@
+﻿using AppForSEII2526.API.DTOs.DeviceDTO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Drawing.Drawing2D;
+using System.Net;
 ﻿using AppForSEII2526.API.DTOs.DeviceDTo;
 using AppForSEII2526.API.DTOs.ReviewDTOs;
 using AppForSEII2526.API.Models;
@@ -13,6 +19,7 @@ namespace AppForSEII2526.API.Controllers
     [ApiController]
     public class DevicesController : ControllerBase
     {
+        private readonly ApplicationDbContext _context;
         //used to enable your controller to access to the database
         private readonly ApplicationDbContext _context;
         //used to log any information when your system is running
@@ -25,6 +32,44 @@ namespace AppForSEII2526.API.Controllers
         }
 
 
+        
+        [HttpGet]
+        [Route("[action]")]
+        [ProducesResponseType(typeof(IList<DeviceParaAlquilarDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult> GetDevicesForRental(string? model, double? priceForRent)
+        {
+            var devices = await _context.Device
+                .Include(d => d.Model)
+                .Where(d =>
+                    ((string.IsNullOrEmpty(model)) || d.Model.Name.Contains(model)) &&
+                    ((priceForRent == null) || d.PriceForRent == priceForRent)
+                )
+                .OrderBy(d => d.PriceForRent)
+                //.ThenBy(d => d.Year)
+                .Select(d => new DeviceParaAlquilarDTO(
+                    d.Id,
+                    d.Name,
+                    d.Model.Name,
+                    d.Brand,
+                    d.Year,
+                    d.Color,
+                    d.PriceForRent
+                ))
+                .ToListAsync();
+
+            return Ok(devices);
+        }
+        
+
+
+      
+        
+
+
+
+
+    }
+}
         //Ejemplo de operacion
         /*
         [HttpGet]
