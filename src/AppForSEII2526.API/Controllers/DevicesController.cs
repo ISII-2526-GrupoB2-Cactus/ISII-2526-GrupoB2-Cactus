@@ -25,7 +25,7 @@ namespace AppForSEII2526.API.Controllers
         [HttpGet]
         [Route("[action]")]
         [ProducesResponseType(typeof(IList<DeviceParaAlquilarDTO>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult> GetDevicesForReview(string? model, double? priceForRent)
+        public async Task<ActionResult> GetDevicesForRental(string? model, double? priceForRent)
         {
             var devices = await _context.Device
                 .Include(d => d.Model)
