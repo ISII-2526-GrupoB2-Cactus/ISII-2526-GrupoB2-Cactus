@@ -44,7 +44,7 @@
         [Range(0.5, float.MaxValue, ErrorMessage = "El precio minimo es 0.5 ")]
         [Display(Name = "Precio de alquiler")]
         [Precision(10, 2)]
-        public double PriceForRent { get; set; }
+        public double PriceForRent { get; set; } 
 
        
 
