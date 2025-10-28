@@ -47,7 +47,7 @@ namespace AppForSEII2526.API.Models
         [StringLength(50, ErrorMessage = "El color no puede tener más de 50 caracteres")]
         public string Color { get; set; }
 
-        [StringLength(100, ErrorMessage = "El nombre no puede tener más de 100 caracteres")]
+        [StringLength(30, ErrorMessage = "El nombre no puede tener más de 30 caracteres")]
         public string Name { get; set; }
 
         [DataType(System.ComponentModel.DataAnnotations.DataType.Currency)]
