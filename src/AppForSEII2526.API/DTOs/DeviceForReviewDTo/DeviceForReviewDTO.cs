@@ -18,7 +18,7 @@
 
         [Required, StringLength(20, ErrorMessage = "El nombre no puede tener más de 20 caracteres")]
         public string Name { get; set; } = string.Empty;
-
+         
         [Required, StringLength(50, ErrorMessage = "La marca no puede tener más de 50 caracteres")]
         public string Brand { get; set; } = string.Empty;
 
@@ -33,4 +33,4 @@
     }
 
 }
-}
+
