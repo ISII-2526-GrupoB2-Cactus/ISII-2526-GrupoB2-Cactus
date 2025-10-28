@@ -1,11 +1,11 @@
-﻿using AppForSEII2526.API.DTOs.DeviceDTo;
-using AppForSEII2526.API.DTOs.ReviewDTOs;
+﻿using AppForSEII2526.API.DTOs.DeviceDTO;
 using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Net;
 
 namespace AppForSEII2526.API.Controllers
 {
@@ -13,10 +13,8 @@ namespace AppForSEII2526.API.Controllers
     [ApiController]
     public class DevicesController : ControllerBase
     {
-        //used to enable your controller to access to the database
-        private readonly ApplicationDbContext _context;
-        //used to log any information when your system is running
-        private readonly ILogger<DevicesController> _logger;
+        private readonly ApplicationDbContext _context; // Used to access the database
+        private readonly ILogger<DevicesController> _logger; // Used for logging
 
         public DevicesController(ApplicationDbContext context, ILogger<DevicesController> logger)
         {
@@ -29,50 +27,31 @@ namespace AppForSEII2526.API.Controllers
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(IList<DeviceForReviewDTO>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult> GetDevicesForReview(int? id, int? year, string? model, string? brand)
+        [ProducesResponseType(typeof(IList<DeviceParaAlquilarDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult> GetDevicesForRental(string? model, double? priceForRent)
         {
-            if (_context.Device == null)
-            {
-                _logger.LogError("Error: No existen dispositivos en la tabla");
-                return NotFound();
-            }
-
             var devices = await _context.Device
                 .Include(d => d.Model)
                 .Where(d =>
-                    (!id.HasValue || d.Id == id) &&
-                    (string.IsNullOrEmpty(brand) || d.Brand.Contains(brand)) &&
-                    (!year.HasValue || d.Year == year) &&
-                    (string.IsNullOrEmpty(model) || d.Model.Name.Contains(model)) 
+                    (string.IsNullOrEmpty(model) || d.Model.Name.Contains(model)) &&
+                    (priceForRent == null || d.PriceForRent == priceForRent)
                 )
-                .OrderBy(d => d.Year)
-                .ThenBy(d => d.PriceForRent)
-                .Select(d => new DeviceForReviewDTO(
+                .OrderBy(d => d.PriceForRent)
+                //.ThenBy(d => d.Year)
+                .Select(d => new DeviceParaAlquilarDTO(
                     d.Id,
-                    d.Brand,
                     d.Name,
+                    d.Model.Name,
+                    d.Brand,
                     d.Year,
-                     d.Model.Name,
-                    d.Color
-                
+                    d.Color,
+                    d.PriceForRent
                 ))
                 .ToListAsync();
 
-            if (!devices.Any()) 
-            {
-                _logger.LogWarning($"No se encontraron dispositivos con los filtros aplicados");
-                return NotFound("No se encontraron dispositivos con los criterios de búsqueda");
-            }
-
             return Ok(devices);
         }
-
-
-        
     }
-
-
 }
 
 
