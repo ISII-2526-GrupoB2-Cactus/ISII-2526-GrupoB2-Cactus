@@ -22,6 +22,9 @@ namespace AppForSEII2526.API.Controllers
             _logger = logger;
         }
 
+
+        
+
         [HttpGet]
         [Route("[action]")]
         [ProducesResponseType(typeof(IList<DeviceParaAlquilarDTO>), (int)HttpStatusCode.OK)]
