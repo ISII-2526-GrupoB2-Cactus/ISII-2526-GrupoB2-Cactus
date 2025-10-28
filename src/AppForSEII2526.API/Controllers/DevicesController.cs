@@ -9,12 +9,15 @@ using System.Net;
 
 namespace AppForSEII2526.API.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class DevicesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context; // Used to access the database
-        private readonly ILogger<DevicesController> _logger; // Used for logging
+        private readonly ApplicationDbContext _context;
+        //used to enable your controller to access to the database
+        //used to log any information when your system is running
+        private readonly ILogger<DevicesController> _logger;
 
         public DevicesController(ApplicationDbContext context, ILogger<DevicesController> logger)
         {
@@ -23,7 +26,6 @@ namespace AppForSEII2526.API.Controllers
         }
 
 
-       
 
         [HttpGet]
         [Route("[action]")]
@@ -33,8 +35,8 @@ namespace AppForSEII2526.API.Controllers
             var devices = await _context.Device
                 .Include(d => d.Model)
                 .Where(d =>
-                    (string.IsNullOrEmpty(model) || d.Model.Name.Contains(model)) &&
-                    (priceForRent == null || d.PriceForRent == priceForRent)
+                    ((string.IsNullOrEmpty(model)) || d.Model.Name.Contains(model)) &&
+                    ((priceForRent == null) || d.PriceForRent == priceForRent)
                 )
                 .OrderBy(d => d.PriceForRent)
                 //.ThenBy(d => d.Year)
@@ -51,7 +53,17 @@ namespace AppForSEII2526.API.Controllers
 
             return Ok(devices);
         }
+
+
+
+
+
+
+
+
+
     }
+
 }
 
 
