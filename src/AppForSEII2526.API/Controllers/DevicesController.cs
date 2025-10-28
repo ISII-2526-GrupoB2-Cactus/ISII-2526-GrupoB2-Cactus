@@ -38,7 +38,7 @@ namespace AppForSEII2526.API.Controllers
                 .Select(d => new DeviceParaAlquilarDTO(
                     d.Id,
                     d.Name,
-                    d.Model,
+                    d.Model.Name,
                     d.Brand,
                     d.Year,
                     d.Color,

@@ -6,7 +6,7 @@
         //CONSTRUCTOR
         
 
-        public DeviceParaAlquilarDTO(int id, string name, Model model, string brand, int year, string color, double priceForRent)
+        public DeviceParaAlquilarDTO(int id, string name, string model, string brand, int year, string color, double priceForRent)
         {
             Id = id;
             Name = name;
@@ -24,7 +24,8 @@
         public string Name { get; set; }
 
 
-        public Model Model { get; }
+        [Required, StringLength(50, ErrorMessage = "El modelo no puede tener más de 50 caracteres")]
+        public string Model { get; }
 
 
         [Required]
