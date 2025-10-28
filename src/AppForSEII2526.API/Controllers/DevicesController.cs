@@ -26,7 +26,7 @@ namespace AppForSEII2526.API.Controllers
         [Route("[action]")]
         [ProducesResponseType(typeof(IList<DeviceForReviewDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult> GetDevicesForReview(int? year, string? model, string? brand)
+        public async Task<ActionResult> GetDevicesForReview(int? year, string? brand)
         {
             if (_context.Device == null)
             {
@@ -38,8 +38,7 @@ namespace AppForSEII2526.API.Controllers
                 .Include(d => d.Model) // Incluye la entidad relacionada Model (si existe)
                 .Where(d =>
                     (string.IsNullOrEmpty(brand) || d.Brand.Contains(brand)) &&
-                    (year == null || d.Year == year) &&
-                    (string.IsNullOrEmpty(model) || d.Model.Name.Contains(model))
+                    (year == null || d.Year == year)
                 )
                 .OrderBy(d => d.Year)
                 .ThenBy(d => d.Name)
