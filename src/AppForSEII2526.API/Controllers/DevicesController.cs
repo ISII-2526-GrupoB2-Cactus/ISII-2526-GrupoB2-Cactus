@@ -63,7 +63,7 @@ namespace AppForSEII2526.API.Controllers
                     (!id.HasValue || d.Id == id) &&
                     (string.IsNullOrEmpty(brand) || d.Brand.Contains(brand)) &&
                     (!year.HasValue || d.Year == year) &&
-                    (string.IsNullOrEmpty(model) || d.Model.Name.Contains(model)) // ← FILTRO AÑADIDO
+                    (string.IsNullOrEmpty(model) || d.Model.Name.Contains(model)) 
                 )
                 .OrderBy(d => d.Year)
                 .ThenBy(d => d.PriceForRent)
@@ -74,14 +74,11 @@ namespace AppForSEII2526.API.Controllers
                     d.Year,
                      d.Model.Name,
                     d.Color
-                // Si necesitas precios y calidad, añádelos aquí
-                // d.PriceForPurchase,
-                // d.PriceForRent, 
-                // d.Quality
+                
                 ))
                 .ToListAsync();
 
-            if (!devices.Any()) // ← MEJOR: Verificar si la lista está vacía
+            if (!devices.Any()) 
             {
                 _logger.LogWarning($"No se encontraron dispositivos con los filtros aplicados");
                 return NotFound("No se encontraron dispositivos con los criterios de búsqueda");
