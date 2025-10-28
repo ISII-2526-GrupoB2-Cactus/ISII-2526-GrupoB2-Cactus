@@ -12,7 +12,7 @@ public class ApplicationUser : IdentityUser {
     public string CustomerUserSurname { get; set; }
 
     [StringLength(30, ErrorMessage = "El nombre tiene que tener entre 3 y 30 caracteres", MinimumLength = 3)]
-    public string CustomerCountry { get; set; }
+    public string? CustomerCountry { get; set; }
 
     public IList<Purchase> Purchase { get; set; }
     public IList<Review> Review { get; set; } 
