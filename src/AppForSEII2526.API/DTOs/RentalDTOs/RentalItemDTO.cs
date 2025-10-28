@@ -1,8 +1,8 @@
 ﻿namespace AppForSEII2526.API.DTOs.RentalDTOs
 {
-    public class DispositivoAlquilerItemDTO
+    public class RentalItemDTO
     {
-        public DispositivoAlquilerItemDTO(int deviceId, string name, string brand, string model, double priceForRent, int quantity = 1)
+        public RentalItemDTO(int deviceId, string name, string brand, string model, double priceForRent, int quantity = 1)
         {
             DeviceId = deviceId;
             Name = name;
@@ -26,7 +26,7 @@
 
         public override bool Equals(object? obj)
         {
-            return obj is DispositivoAlquilerItemDTO dTO &&
+            return obj is RentalItemDTO dTO &&
                    DeviceId == dTO.DeviceId &&
                    Name == dTO.Name &&
                    Brand == dTO.Brand &&
