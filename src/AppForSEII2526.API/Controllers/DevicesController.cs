@@ -22,7 +22,7 @@ namespace AppForSEII2526.API.Controllers
             _logger = logger;
         }
 
-        // GET: api/devices/getdevicesforreview?year=2023&brand=Samsung
+ 
         [HttpGet]
         [Route("[action]")]
         [ProducesResponseType(typeof(IList<DeviceForReviewDTO>), (int)HttpStatusCode.OK)]
@@ -36,7 +36,7 @@ namespace AppForSEII2526.API.Controllers
             }
 
             var devices = await _context.Device
-                .Include(d => d.Model) // Incluye la entidad relacionada Model (si existe)
+                .Include(d => d.Model) 
                 .Where(d =>
                     (string.IsNullOrEmpty(brand) || d.Brand.Contains(brand)) &&
                     (year == null || d.Year == year)
@@ -45,7 +45,7 @@ namespace AppForSEII2526.API.Controllers
                 .ThenBy(d => d.Name)
                 .Select(d => new DeviceForReviewDTO(
                     d.Id,
-                    d.Brand,        // orden correcto según tu constructor
+                    d.Brand,        
                     d.Name,
                     d.Year,
                     d.Model.Name,

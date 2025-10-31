@@ -30,6 +30,21 @@
 
         [StringLength(50, ErrorMessage = "El color no puede tener más de 50 caracteres")]
         public string Color { get; set; } = string.Empty;
+
+        public override bool Equals(object? obj)
+        {
+            return obj is DeviceForReviewDTO dTO &&
+                   Id == dTO.Id &&
+                   Name == dTO.Name &&
+                   Brand == dTO.Brand &&
+                   Year == dTO.Year &&
+                   Model == dTO.Model &&
+                   Color == dTO.Color;
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Name, Brand, Year, Model, Color);
+        }
     }
 
 
