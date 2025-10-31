@@ -5,32 +5,42 @@
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Text.Json.Serialization;
+
     public class ReviewForCreateDTO
     {
-        public ReviewForCreateDTO(string customerUserName, string customerNameSurname, DateTime reviewDate, IList<ReviewItemDTO> reviewItems)
+        public ReviewForCreateDTO(string customerUserName, string customerNameSurname, DateTime reviewDate, string reviewTitle, IList<ReviewItemDTO> reviewItems)
         {
             CustomerUserName = customerUserName ?? throw new ArgumentNullException(nameof(customerUserName));
             CustomerNameSurname = customerNameSurname ?? throw new ArgumentNullException(nameof(customerNameSurname));
             ReviewDate = reviewDate;
+            ReviewTitle = reviewTitle ?? throw new ArgumentNullException(nameof(reviewTitle));
             ReviewItems = reviewItems ?? throw new ArgumentNullException(nameof(reviewItems));
         }
 
         public ReviewForCreateDTO()
         {
             ReviewItems = new List<ReviewItemDTO>();
+            ReviewTitle = string.Empty;
         }
 
         [Required]
         [EmailAddress]
-        public string CustomerUserName { get; set; }
+        [Display(Name = "Nombre de usuario")]
+        public string CustomerUserName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Por favor, ingrese su nombre y apellido")]
         [StringLength(50, MinimumLength = 5, ErrorMessage = "El nombre y apellido deben tener al menos 5 caracteres")]
-        public string CustomerNameSurname { get; set; }
+        [Display(Name = "Nombre completo")]
+        public string CustomerNameSurname { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Fecha de la reseña")]
         public DateTime ReviewDate { get; set; }
+
+        [Required]
+        [StringLength(50, MinimumLength = 10, ErrorMessage = "El título debe tener entre 10 y 50 caracteres")]
+        [Display(Name = "Título de la reseña")]
+        public string ReviewTitle { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Artículos reseñados")]
@@ -57,13 +67,14 @@
                    CompareDate(ReviewDate, dto.ReviewDate) &&
                    CustomerUserName == dto.CustomerUserName &&
                    CustomerNameSurname == dto.CustomerNameSurname &&
+                   ReviewTitle == dto.ReviewTitle &&
                    ReviewItems.SequenceEqual(dto.ReviewItems) &&
                    AverageRating == dto.AverageRating;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(CustomerUserName, CustomerNameSurname, ReviewDate, ReviewItems, AverageRating);
+            return HashCode.Combine(CustomerUserName, CustomerNameSurname, ReviewDate, ReviewTitle, ReviewItems, AverageRating);
         }
     }
 }
