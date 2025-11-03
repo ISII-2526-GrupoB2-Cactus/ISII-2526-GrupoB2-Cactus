@@ -1,5 +1,6 @@
 namespace AppForSEII2526.API.Models
 {
+    [PrimaryKey(nameof(DeviceId), nameof(RentId))]
     public class RentDevice
     {
 
@@ -22,7 +23,7 @@ namespace AppForSEII2526.API.Models
         //-----------------------------------
         //ATRIBUTOS
         //-----------------------------------
-
+        
         public int RentId { get; set; } //Primary Key
 
         [Required(ErrorMessage = "El ID del dispositivo es obligatorio")]
