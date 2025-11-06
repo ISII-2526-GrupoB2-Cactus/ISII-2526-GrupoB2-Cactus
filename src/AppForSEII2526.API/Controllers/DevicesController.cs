@@ -1,5 +1,6 @@
 ﻿using AppForSEII2526.API.DTOs.DeviceDTo;
 using AppForSEII2526.API.DTOs.DeviceDTO;
+using AppForSEII2526.API.DTOs.DeviceDTOs;
 using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
