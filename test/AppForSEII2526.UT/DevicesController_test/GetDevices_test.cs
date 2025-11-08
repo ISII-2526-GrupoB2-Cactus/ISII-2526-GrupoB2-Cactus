@@ -1,8 +1,15 @@
 ﻿using AppForSEII2526.API.Controllers;
 using AppForSEII2526.API.DTOs.DeviceDTo;
-using AppForSEII2526.API.DTOs;
 using AppForSEII2526.API.Models;
-
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace AppForSEII2526.UT.DevicesController_test
 {
@@ -61,7 +68,7 @@ namespace AppForSEII2526.UT.DevicesController_test
                     QuantityForRent = 4,
                     Model = models[2]
                 }
-            }; //Hasta aqui el contenido de la bbdd en memoria 
+            };
 
             ApplicationUser user = new ApplicationUser
             {
@@ -72,15 +79,14 @@ namespace AppForSEII2526.UT.DevicesController_test
                 UserName = "maria.martinez128@alu.uclm.es"
             };
 
-            
-            _context.AddRange(models);
-            _context.AddRange(devices);
-            _context.Add(user);
+            _context.Model.AddRange(models);
+            _context.Device.AddRange(devices);
+            _context.Users.Add(user);
             _context.SaveChanges();
         }
 
-        //Casos de prueba
-        public static IEnumerable<object[]> TestCasesFor_GetDevicesForReview_OK() //Se configuran los casos de prueba 
+        // Casos de prueba
+        public static IEnumerable<object[]> TestCasesFor_GetDevicesForReview_OK()
         {
             var deviceDTOs = new List<DeviceForReviewDTO>()
             {
@@ -89,15 +95,19 @@ namespace AppForSEII2526.UT.DevicesController_test
                 new DeviceForReviewDTO(3, "Lenovo", "ThinkPad X1", 2022, "ThinkPad X1", "Gray"),
             };
 
+            // Caso 1: Sin filtros - todos los dispositivos ordenados por año y nombre
             var tc1 = deviceDTOs.OrderBy(d => d.Year).ThenBy(d => d.Name).ToList();
 
+            // Caso 2: Filtrar solo por marca "Apple"
             var tc2 = new List<DeviceForReviewDTO> { deviceDTOs[1] };
 
+            // Caso 3: Filtrar solo por año 2022
             var tc3 = new List<DeviceForReviewDTO> { deviceDTOs[2] };
 
+            // Caso 4: Filtrar por año 2023 y marca "Samsung"
             var tc4 = new List<DeviceForReviewDTO> { deviceDTOs[0] };
 
-            return new List<object[]> //Exactamente la configuracion de DTOs y parametros de entrada que le vamos a pasar al metodo
+            return new List<object[]>
             {
                 new object[] { null, null, tc1 },
                 new object[] { null, "Apple", tc2 },
@@ -113,18 +123,23 @@ namespace AppForSEII2526.UT.DevicesController_test
         public async Task GetDevicesForReview_OK_test(int? year, string? brand, IList<DeviceForReviewDTO> expectedDevices)
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<DevicesController>>();
-            var controller = new DevicesController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+
+            var controller = new DevicesController(_context, logger);
 
             // Act
             var result = await controller.GetDevicesForReview(year, brand);
 
             // Assert
+            // Verificamos que el tipo de respuesta es OK y obtenemos la lista de dispositivos
             var okResult = Assert.IsType<OkObjectResult>(result);
             var actualDevices = Assert.IsType<List<DeviceForReviewDTO>>(okResult.Value);
 
+            // Verificamos que la cantidad de dispositivos esperados y actuales coinciden
             Assert.Equal(expectedDevices.Count, actualDevices.Count);
 
+            // Verificamos que cada dispositivo coincide en todas sus propiedades
             for (int i = 0; i < expectedDevices.Count; i++)
             {
                 Assert.Equal(expectedDevices[i].Id, actualDevices[i].Id);
@@ -136,19 +151,23 @@ namespace AppForSEII2526.UT.DevicesController_test
             }
         }
 
-        [Fact] //Es fact porque se le pasan directamente los datos 
+        [Fact]
         [Trait("LevelTesting", "Unit Testing")]
         [Trait("Database", "WithoutFixture")]
         public async Task GetDevicesForReview_NotFound_WhenNoDevices_test()
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<DevicesController>>();
-            var controller = new DevicesController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
 
-            // Act (buscamos un año que no existe)
+            var controller = new DevicesController(_context, logger);
+
+            // Act
+            // Buscamos un año que no existe en la base de datos
             var result = await controller.GetDevicesForReview(1990, "Sony");
 
             // Assert
+            // Verificamos que el tipo de respuesta es NotFound
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             var message = Assert.IsType<string>(notFoundResult.Value);
             Assert.Equal("No se encontraron dispositivos que coincidan con los filtros aplicados.", message);
@@ -157,31 +176,113 @@ namespace AppForSEII2526.UT.DevicesController_test
         [Fact]
         [Trait("LevelTesting", "Unit Testing")]
         [Trait("Database", "WithoutFixture")]
+        public async Task GetDevicesForReview_FilterByYear_test()
+        {
+            // Arrange
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+
+            var controller = new DevicesController(_context, logger);
+
+            // Act
+            // Filtramos solo por año 2023 (sin marca)
+            var result = await controller.GetDevicesForReview(2023, null);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actualDevices = Assert.IsType<List<DeviceForReviewDTO>>(okResult.Value);
+
+            // Debe retornar 2 dispositivos (Samsung y Apple del 2023)
+            Assert.Equal(2, actualDevices.Count);
+            Assert.All(actualDevices, d => Assert.Equal(2023, d.Year));
+        }
+
+        [Fact]
+        [Trait("LevelTesting", "Unit Testing")]
+        [Trait("Database", "WithoutFixture")]
+        public async Task GetDevicesForReview_FilterByBrand_test()
+        {
+            // Arrange
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+
+            var controller = new DevicesController(_context, logger);
+
+            // Act
+            // Filtramos solo por marca "Lenovo" (sin año)
+            var result = await controller.GetDevicesForReview(null, "Lenovo");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actualDevices = Assert.IsType<List<DeviceForReviewDTO>>(okResult.Value);
+
+            // Debe retornar 1 dispositivo (Lenovo)
+            Assert.Single(actualDevices);
+            Assert.Equal("Lenovo", actualDevices[0].Brand);
+        }
+
+        [Fact]
+        [Trait("LevelTesting", "Unit Testing")]
+        [Trait("Database", "WithoutFixture")]
+        public async Task GetDevicesForReview_AllDevices_OrderedCorrectly_test()
+        {
+            // Arrange
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+
+            var controller = new DevicesController(_context, logger);
+
+            // Act
+            // Sin filtros, deben venir todos ordenados por año y luego por nombre
+            var result = await controller.GetDevicesForReview(null, null);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actualDevices = Assert.IsType<List<DeviceForReviewDTO>>(okResult.Value);
+
+            // Verificamos que están ordenados correctamente
+            Assert.Equal(3, actualDevices.Count);
+
+            // Primero el de 2022
+            Assert.Equal(2022, actualDevices[0].Year);
+            Assert.Equal("ThinkPad X1", actualDevices[0].Name);
+
+            // Luego los de 2023 ordenados por nombre
+            Assert.Equal(2023, actualDevices[1].Year);
+            Assert.Equal("Galaxy Ultra", actualDevices[1].Name);
+
+            Assert.Equal(2023, actualDevices[2].Year);
+            Assert.Equal("iPhone Pro", actualDevices[2].Name);
+        }
+    }
+
+    // Clase adicional para probar el caso donde la tabla Device está vacía
+    public class GetDevicesForReview_EmptyTable_test : AppForSEII2526SqliteUT
+    {
+        public GetDevicesForReview_EmptyTable_test()
+        {
+            // No inicializamos ningún dispositivo para simular tabla vacía
+        }
+
+        [Fact]
+        [Trait("LevelTesting", "Unit Testing")]
+        [Trait("Database", "WithoutFixture")]
         public async Task GetDevicesForReview_NotFound_WhenTableEmpty_test()
         {
-            var emptyContext = CreateEmptyContext();
-            var mockLogger = new Mock<ILogger<DevicesController>>();
-            var controller = new DevicesController(emptyContext, mockLogger.Object);
+            // Arrange
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+
+            var controller = new DevicesController(_context, logger);
 
             // Act
             var result = await controller.GetDevicesForReview(null, null);
 
             // Assert
+            // Verificamos que el tipo de respuesta es NotFound cuando la tabla está vacía
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             var message = Assert.IsType<string>(notFoundResult.Value);
             Assert.Equal("No existen dispositivos en la base de datos.", message);
-        }
-
-        private ApplicationDbContext CreateEmptyContext()
-        {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlite("Data Source=:memory:") // Usar SQLite en memoria
-                .Options;
-
-            var context = new ApplicationDbContext(options);
-            context.Database.OpenConnection();
-            context.Database.EnsureCreated();
-            return context;
         }
     }
 }
