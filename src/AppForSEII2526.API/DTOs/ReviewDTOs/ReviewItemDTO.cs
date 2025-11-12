@@ -8,6 +8,9 @@
             Rating = rating;
             Comments = comments;
         }
+        public ReviewItemDTO()
+        {
+        }
 
         public int DeviceId { get; set; }
 
