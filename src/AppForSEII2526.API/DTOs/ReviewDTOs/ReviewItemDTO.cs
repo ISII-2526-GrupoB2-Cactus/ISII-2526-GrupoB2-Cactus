@@ -17,7 +17,7 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
         {
             //En este constructor estan todos los datos QUE SE MUESTRAN DEL DISPOSITIVO
             DeviceId = deviceId;
-            Name = name;
+            Name = name;////
             Model = model;
             Year = year;
             Rating = rating;
