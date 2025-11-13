@@ -6,6 +6,7 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
         //Asi como de cada dispositivo su nombre, modelo, año, puntuación y el comentario
         public ReviewItemDTO() { }
         public ReviewItemDTO(int deviceId, int rating, string? comments)
+        public ReviewItemDTO(int deviceId,int rating, string? comments)
         {
             //En este constructor estan los datos OBLIGATORIOS
             DeviceId = deviceId;
@@ -22,7 +23,7 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
             Rating = rating;
             Comments = comments;
         }
-
+       
         public int DeviceId { get; set; }
 
         [StringLength(30, ErrorMessage = "El nombre no puede tener más de 30 caracteres")]

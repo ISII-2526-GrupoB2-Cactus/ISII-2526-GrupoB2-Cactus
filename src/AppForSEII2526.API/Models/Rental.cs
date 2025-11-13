@@ -73,7 +73,7 @@ namespace AppForSEII2526.API.Models
         //---------------------------------------------------------------
 
         // Relación uno-a-muchos: Un Rental puede tener múltiples RentalItems
-        public RentDevice RentDevice { get; set; }
+        public IList<RentDevice> RentDevice { get; set; }
 
         public ApplicationUser ApplicationUser { get; set; }
 
