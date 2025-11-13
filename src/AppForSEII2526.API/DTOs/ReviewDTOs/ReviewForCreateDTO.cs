@@ -22,6 +22,20 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
             ReviewItems = reviewItems ?? throw new ArgumentNullException(nameof(reviewItems));
         }
 
+        //CONSTRUCTOR PARA ReviewDetailDTO
+        public ReviewForCreateDTO(string title, string customerCountry, string? customerUserName, DateTime reviewDate, IList<ReviewItemDTO> reviewItems)
+        {
+            Title = title ?? throw new ArgumentNullException(nameof(title));
+            CustomerCountry = customerCountry ?? throw new ArgumentNullException(nameof(customerCountry));
+            CustomerUserName = customerUserName;
+            ReviewDate = reviewDate;
+        {
+            Title = title ?? throw new ArgumentNullException(nameof(title));
+            CustomerCountry = customerCountry ?? throw new ArgumentNullException(nameof(customerCountry));
+            CustomerUserName = customerUserName; //Opcional
+            ReviewItems = reviewItems ?? throw new ArgumentNullException(nameof(reviewItems));
+        }
+
         public ReviewForCreateDTO()
         {
             ReviewItems = new List<ReviewItemDTO>();
@@ -44,6 +58,9 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
         [Required]
         [Display(Name = "Dispositivos reseñados")]
         public IList<ReviewItemDTO> ReviewItems { get; set; }
+
+
+        public DateTime ReviewDate { get; set; } //Lo necesito para ReviewDetailDTO
 
         // Promedio de puntuaciones
         [Display(Name = "Puntuación promedio")]
