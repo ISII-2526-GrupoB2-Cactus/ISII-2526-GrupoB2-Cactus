@@ -29,6 +29,10 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
             CustomerCountry = customerCountry ?? throw new ArgumentNullException(nameof(customerCountry));
             CustomerUserName = customerUserName;
             ReviewDate = reviewDate;
+        {
+            Title = title ?? throw new ArgumentNullException(nameof(title));
+            CustomerCountry = customerCountry ?? throw new ArgumentNullException(nameof(customerCountry));
+            CustomerUserName = customerUserName; //Opcional
             ReviewItems = reviewItems ?? throw new ArgumentNullException(nameof(reviewItems));
         }
 

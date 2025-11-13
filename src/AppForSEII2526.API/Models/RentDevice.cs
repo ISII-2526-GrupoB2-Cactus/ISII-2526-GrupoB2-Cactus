@@ -44,11 +44,10 @@ namespace AppForSEII2526.API.Models
         //RELACIONES
         //-----------------------------------
 
-        //Relacion muchos a uno con Rental
-        public IList<Rental> Rental { get; set; }
+        
+        public Rental Rental { get; set; }
 
-        //Relacion muchos a uno con Device
-        public IList<Device> Devices { get; set; }
+        public Device Devices { get; set; }
 
     }
 }
