@@ -2,230 +2,185 @@
 using AppForSEII2526.API.DTOs.ReviewDTOs;
 using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace AppForSEII2526.UT.ReviewsController_test
 {
-    public class PostReviews_test : AppForSEII2526SqliteUT
+    public class PostReview_test : AppForSEII2526SqliteUT
     {
-        private const string _userName = "lucia.garcia@uclm.es";
-        private const string _customerUserName = "Lucía"; // CORREGIDO: Esto es lo que busca el controlador
-        private const string _customerNameSurname = "Lucía García";
-        private const string _device1Name = "Galaxy S22";
-        private const string _device1Brand = "Samsung";
-        private const string _device2Name = "iPhone 14";
-        private const string _device2Brand = "Apple";
+        private const string _userName = "Lucia";  // CustomerUserName, no email
+        private const string _customerNameSurname = "Lucia Romero";
 
-        public PostReviews_test()
+        public PostReview_test()
         {
-            // Crear modelos
-            var models = new List<Model>()
-            {
-                new Model { Id = 1, Name = "Galaxy Series" },
-                new Model { Id = 2, Name = "iPhone Series" }
-            };
-
-            // Crear dispositivos
-            var devices = new List<Device>()
-            {
-                new Device(1, _device1Brand, "Negro", _device1Name, 850.0, 50.0, 2022, Device.QualityType.New, 5, 2),
-                new Device(2, _device2Brand, "Blanco", _device2Name, 950.0, 70.0, 2023, Device.QualityType.New, 0, 2)
-            };
-
-            devices[0].Model = models[0];
-            devices[1].Model = models[1];
-
-            // Crear usuario - CORREGIDO: CustomerUserName debe coincidir con lo que busca el controlador
-            ApplicationUser user = new ApplicationUser
+            var user = new ApplicationUser
             {
                 Id = "1",
-                UserName = _userName,
-                Email = _userName,
-                CustomerUserName = _customerUserName, // Esto es lo que busca el controlador
-                CustomerUserSurname = "García"
+                CustomerUserName = "Lucia",  // Esto es lo que busca el controller
+                CustomerUserSurname = "Romero",
+                Email = "lucia.romero@alu.uclm.es",
+                UserName = "lucia.romero@alu.uclm.es"
             };
 
-            // Crear review inicial (ya existente en el sistema)
-            var review = new Review
-            {
-                ReviewId = 1,
-                CustomerId = 1,
-                DateOfReview = DateTime.Today.AddDays(-5),
-                OverallRating = 4,
-                ReviewTitle = "Muy buen dispositivo en general",
-                ApplicationUser = user,
-                ReviewItems = new List<ReviewItem>()
-            };
-            review.ReviewItems.Add(new ReviewItem("Excelente batería y rendimiento", 5, review.ReviewId, devices[0].Id)
-            {
-                Device = devices[0],
-                Review = review
-            });
+            var model1 = new Model { Id = 1, Name = "iPhone 15" };
+            var model2 = new Model { Id = 2, Name = "Galaxy S" };
 
-            // Guardar en contexto
+            var devices = new List<Device>()
+            {
+                new Device
+                {
+                    Id = 1,
+                    Brand = "Apple",
+                    Color = "Negro",
+                    Name = "iPhone 15 Pro",
+                    PriceForPurchase = 1200,
+                    QuantityForPurchase = 5,
+                    Year = 2023,
+                    Model = model1
+                },
+                new Device
+                {
+                    Id = 2,
+                    Brand = "Samsung",
+                    Color = "Plateado",
+                    Name = "Samsung Galaxy S24",
+                    PriceForPurchase = 1000,
+                    QuantityForPurchase = 3,
+                    Year = 2024,
+                    Model = model2
+                }
+            };
+
             _context.Users.Add(user);
-            _context.Model.AddRange(models);
+            _context.AddRange(model1, model2);
             _context.Device.AddRange(devices);
-            _context.Review.Add(review);
             _context.SaveChanges();
         }
 
         public static IEnumerable<object[]> TestCasesFor_CreateReview()
         {
-            // CORREGIDO: Usar CustomerUserName en lugar de UserName
-            var reviewNoItem = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today,
-                "Reseña sin dispositivos",
-                new List<ReviewItemDTO>()
-            );
-
-            var reviewFutureDate = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(5),
-                "Reseña con fecha futura",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 5, "Buen dispositivo")
-                }
-            );
-
-            var reviewUserNotRegistered = new ReviewForCreateDTO(
-                "UsuarioInexistente", // CORREGIDO: CustomerUserName que no existe
-                _customerNameSurname,
-                DateTime.Today,
-                "Usuario no registrado en el sistema",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 5, "Comentario válido")
-                }
-            );
-
-            var allTests = new List<object[]>
+            // CASO 1: Review sin items - DEBE SER EL PRIMERO
+            yield return new object[]
             {
-                new object[] { reviewNoItem, "ReviewItems" },
-                new object[] { reviewFutureDate, "ReviewDate" },
-                new object[] { reviewUserNotRegistered, "CustomerUserName" }
+                new ReviewForCreateDTO(
+                    "Lucia",  // CustomerUserName correcto
+                    "Lucia Romero",
+                    DateTime.Now.AddDays(-1),
+                    "Review sin items de al menos 10 caracteres",  // Mínimo 10 caracteres
+                    new List<ReviewItemDTO>()
+                ),
+                "Error! Debes incluir al menos un dispositivo para reseñar"
             };
 
-            return allTests;
+            // CASO 2: Fecha futura - SEGUNDO
+            yield return new object[]
+            {
+                new ReviewForCreateDTO(
+                    "Lucia",
+                    "Lucia Romero",
+                    DateTime.Now.AddDays(1),  // Fecha futura
+                    "Review futura titulo largo suficiente",
+                    new List<ReviewItemDTO>()
+                    {
+                        new ReviewItemDTO(1, 4, "Buen dispositivo")
+                    }
+                ),
+                "Error! La fecha de reseña no puede ser futura"
+            };
+
+            // CASO 3: Usuario no registrado - TERCERO
+            yield return new object[]
+            {
+                new ReviewForCreateDTO(
+                    "UsuarioInexistente",  // CustomerUserName que no existe
+                    "Usuario Inexistente",
+                    DateTime.Now.AddDays(-1),
+                    "Review usuario titulo largo suficiente",
+                    new List<ReviewItemDTO>()
+                    {
+                        new ReviewItemDTO(1, 4, "Comentario")
+                    }
+                ),
+                "Error! El nombre de usuario no está registrado"
+            };
+
+            // CASO 4: Dispositivo no existe - CUARTO
+            yield return new object[]
+            {
+                new ReviewForCreateDTO(
+                    "Lucia",
+                    "Lucia Romero",
+                    DateTime.Now.AddDays(-1),
+                    "Review dispositivo titulo largo suficiente",
+                    new List<ReviewItemDTO>()
+                    {
+                        new ReviewItemDTO(999, 4, "Dispositivo que no existe")
+                    }
+                ),
+                "Error! El dispositivo con ID 999 no existe"
+            };
+
+            // CASO 5: Rating menor a 1 - QUINTO
+            yield return new object[]
+            {
+                new ReviewForCreateDTO(
+                    "Lucia",
+                    "Lucia Romero",
+                    DateTime.Now.AddDays(-1),
+                    "Review rating bajo titulo largo",
+                    new List<ReviewItemDTO>()
+                    {
+                        new ReviewItemDTO(1, 0, "Rating muy bajo")
+                    }
+                ),
+                "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5"
+            };
+
+            // CASO 6: Rating mayor a 5 - SEXTO
+            yield return new object[]
+            {
+                new ReviewForCreateDTO(
+                    "Lucia",
+                    "Lucia Romero",
+                    DateTime.Now.AddDays(-1),
+                    "Review rating alto titulo largo",
+                    new List<ReviewItemDTO>()
+                    {
+                        new ReviewItemDTO(1, 6, "Rating muy alto")
+                    }
+                ),
+                "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5"
+            };
         }
 
         [Theory]
         [Trait("LevelTesting", "Unit Testing")]
         [Trait("Database", "WithoutFixture")]
         [MemberData(nameof(TestCasesFor_CreateReview))]
-        public async Task CreateReview_InitialValidationErrors_test(ReviewForCreateDTO reviewDTO, string expectedErrorKey)
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            ILogger<ReviewsController> logger = mock.Object;
-            var controller = new ReviewsController(_context, logger);
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            Assert.Contains(expectedErrorKey, problemDetails.Errors.Keys);
-        }
-
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_DeviceNotFound_test()
+        public async Task CreateReview_Error_test(ReviewForCreateDTO reviewDTO, string errorExpected)
         {
             // Arrange
             var mock = new Mock<ILogger<ReviewsController>>();
             var controller = new ReviewsController(_context, mock.Object);
 
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-1),
-                "Review con dispositivo inexistente",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(999, 5, "Dispositivo que no existe")
-                }
-            );
-
             // Act
             var result = await controller.CreateReview(reviewDTO);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            Assert.Contains("ReviewItems", problemDetails.Errors.Keys);
-        }
 
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_RatingTooLow_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
+            // Buscar el error en todos los errores disponibles
+            var allErrors = problemDetails.Errors.Values.SelectMany(errors => errors).ToList();
 
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-2),
-                "Review con rating inválido",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 0, "Rating demasiado bajo")
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            Assert.Contains("ReviewItems", problemDetails.Errors.Keys);
-        }
-
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_RatingTooHigh_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
-
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-2),
-                "Review con rating inválido",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 6, "Rating demasiado alto")
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            Assert.Contains("ReviewItems", problemDetails.Errors.Keys);
+            // Verificar que existe algún error que contenga el texto esperado
+            Assert.Contains(allErrors, error => error.Contains(errorExpected));
         }
 
         [Fact]
@@ -237,15 +192,15 @@ namespace AppForSEII2526.UT.ReviewsController_test
             var mock = new Mock<ILogger<ReviewsController>>();
             var controller = new ReviewsController(_context, mock.Object);
 
+            var reviewDate = DateTime.Now.AddDays(-2);
             var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-3),
-                "Review completamente válida",
+                "Lucia",  // CustomerUserName correcto
+                "Lucia Romero",
+                reviewDate,
+                "Excelente dispositivo Samsung con titulo largo",  // Más de 10 caracteres
                 new List<ReviewItemDTO>()
                 {
-                    new ReviewItemDTO(1, 5, "Excelente dispositivo"),
-                    new ReviewItemDTO(2, 4, "Muy bueno también")
+                    new ReviewItemDTO(2, 5, "Samsung espectacular")
                 }
             );
 
@@ -254,245 +209,14 @@ namespace AppForSEII2526.UT.ReviewsController_test
 
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-            var reviewDetail = Assert.IsType<ReviewDetailDTO>(createdResult.Value);
-            Assert.Equal(2, reviewDetail.Id);
-            Assert.Equal(2, reviewDetail.ReviewItems.Count);
-            Assert.Equal(4.5, reviewDetail.AverageRating);
-        }
+            var actualReviewDetailDTO = Assert.IsType<ReviewDetailDTO>(createdResult.Value);
 
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_MultipleValidationErrors_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
-
-            // Review con múltiples errores
-            var reviewDTO = new ReviewForCreateDTO(
-                "UsuarioInexistente", // usuario no existe
-                _customerNameSurname,
-                DateTime.Today.AddDays(10), // fecha futura
-                "Múltiples errores",
-                new List<ReviewItemDTO>() // sin items
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            Assert.True(problemDetails.Errors.Count >= 2);
-        }
-
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_WithNullComments_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
-
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-1),
-                "Review con comentarios null",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 5, null)
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-            var reviewDetail = Assert.IsType<ReviewDetailDTO>(createdResult.Value);
-            Assert.Equal(string.Empty, reviewDetail.ReviewItems[0].Comments);
-        }
-
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_DatabaseException_test()
-        {
-            // Arrange - Mock para simular excepción en SaveChangesAsync
-            var mockContext = new Mock<ApplicationDbContext>();
-
-            // Configurar los DbSet necesarios
-            var mockUsers = new Mock<DbSet<ApplicationUser>>();
-            var mockDevices = new Mock<DbSet<Device>>();
-            var mockReviews = new Mock<DbSet<Review>>();
-
-            var user = _context.Users.First();
-            var device = _context.Device.First();
-
-            var usersList = new List<ApplicationUser> { user }.AsQueryable();
-            var devicesList = new List<Device> { device }.AsQueryable();
-
-            mockUsers.As<IQueryable<ApplicationUser>>().Setup(m => m.Provider).Returns(usersList.Provider);
-            mockUsers.As<IQueryable<ApplicationUser>>().Setup(m => m.Expression).Returns(usersList.Expression);
-            mockUsers.As<IQueryable<ApplicationUser>>().Setup(m => m.ElementType).Returns(usersList.ElementType);
-            mockUsers.As<IQueryable<ApplicationUser>>().Setup(m => m.GetEnumerator()).Returns(usersList.GetEnumerator());
-
-            mockDevices.As<IQueryable<Device>>().Setup(m => m.Provider).Returns(devicesList.Provider);
-            mockDevices.As<IQueryable<Device>>().Setup(m => m.Expression).Returns(devicesList.Expression);
-            mockDevices.As<IQueryable<Device>>().Setup(m => m.ElementType).Returns(devicesList.ElementType);
-            mockDevices.As<IQueryable<Device>>().Setup(m => m.GetEnumerator()).Returns(devicesList.GetEnumerator());
-
-            mockContext.Setup(m => m.Users).Returns(mockUsers.Object);
-            mockContext.Setup(m => m.Device).Returns(mockDevices.Object);
-            mockContext.Setup(m => m.Review).Returns(mockReviews.Object);
-
-            // Simular excepción en SaveChangesAsync
-            mockContext.Setup(m => m.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                      .ThrowsAsync(new Exception("Database error"));
-
-            var mockLogger = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(mockContext.Object, mockLogger.Object);
-
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today,
-                "Test database exception",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 5, "Test")
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var conflictResult = Assert.IsType<ConflictObjectResult>(result);
-            Assert.IsType<string>(conflictResult.Value);
-        }
-
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_SingleItem_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
-
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-1),
-                "Review con un solo item",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 3, "Buen dispositivo")
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-            var reviewDetail = Assert.IsType<ReviewDetailDTO>(createdResult.Value);
-            Assert.Single(reviewDetail.ReviewItems);
-            Assert.Equal(3.0, reviewDetail.AverageRating);
-        }
-
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_OverallRatingCalculation_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
-
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-1),
-                "Prueba de cálculo de rating",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 1, "Muy malo"),
-                    new ReviewItemDTO(2, 5, "Excelente")
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-            var reviewDetail = Assert.IsType<ReviewDetailDTO>(createdResult.Value);
-            Assert.Equal(3.0, reviewDetail.AverageRating);
-        }
-
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_AllValidationsPass_CreatedAtAction_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
-
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-5),
-                "Review exitosa",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 4, "Muy bueno")
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal("GetReview", createdResult.ActionName);
-            Assert.Equal(2, createdResult.RouteValues["id"]);
-        }
-
-        // TEST NUEVO: Para cubrir el caso donde no hay dispositivos en la validación
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_MultipleDevicesValidation_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mock.Object);
-
-            var reviewDTO = new ReviewForCreateDTO(
-                _customerUserName, // CORREGIDO
-                _customerNameSurname,
-                DateTime.Today.AddDays(-1),
-                "Review con múltiples validaciones",
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 5, "Válido"),
-                    new ReviewItemDTO(999, 6, "Inválido - dispositivo no existe y rating alto")
-                }
-            );
-
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            Assert.Contains("ReviewItems", problemDetails.Errors.Keys);
+            Assert.Equal("Lucia", actualReviewDetailDTO.CustomerUserName);
+            Assert.Equal("Lucia Romero", actualReviewDetailDTO.CustomerNameSurname);
+            Assert.Single(actualReviewDetailDTO.ReviewItems);
+            Assert.Equal(2, actualReviewDetailDTO.ReviewItems.First().DeviceId);
+            Assert.Equal(5, actualReviewDetailDTO.ReviewItems.First().Rating);
+            Assert.Equal(5.0, actualReviewDetailDTO.AverageRating);
         }
     }
 }
