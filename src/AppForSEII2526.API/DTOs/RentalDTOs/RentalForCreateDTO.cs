@@ -5,7 +5,10 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
 {
     public class RentalForCreateDTO
     {
-        public RentalForCreateDTO(string customerUserName, string customerNameSurname, string deliveryAddress, PaymentMethodType paymentMethod, DateTime rentalDateFrom, DateTime rentalDateTo, IList<RentalItemDTO> rentalItems)
+
+        public RentalForCreateDTO(string customerUserName, string customerNameSurname, string deliveryAddress,
+                                PaymentMethodType paymentMethod, DateTime rentalDateFrom, DateTime rentalDateTo,
+                                IList<RentalItemDTO> rentalItems)
         {
             CustomerUserName = customerUserName ?? throw new ArgumentNullException(nameof(customerUserName));
             CustomerNameSurname = customerNameSurname ?? throw new ArgumentNullException(nameof(customerNameSurname));
@@ -16,13 +19,12 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
             RentalItems = rentalItems ?? throw new ArgumentNullException(nameof(rentalItems));
         }
 
+
         public RentalForCreateDTO()
         {
-            CustomerUserName = string.Empty;
-            CustomerNameSurname = string.Empty;
-            DeliveryAddress = string.Empty;
             RentalItems = new List<RentalItemDTO>();
         }
+
 
         public DateTime RentalDateFrom { get; set; }
 
@@ -47,6 +49,9 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
         [Required]
         public PaymentMethodType PaymentMethod { get; set; }
 
+
+
+
         private int NumberOfDays
         {
             get
@@ -65,11 +70,15 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
             }
         }
 
+
+        //COMPARE
         protected bool CompareDate(DateTime date1, DateTime date2)
         {
             return (date1.Subtract(date2) < new TimeSpan(0, 1, 0));
         }
 
+
+        //EQUALS
         public override bool Equals(object? obj)
         {
             return obj is RentalForCreateDTO dTO &&
@@ -85,8 +94,7 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(CustomerUserName, CustomerNameSurname, DeliveryAddress,
-                                   PaymentMethod, RentalDateFrom, RentalDateTo, RentalItems);
+            return HashCode.Combine(RentalDateFrom, RentalDateTo, DeliveryAddress, CustomerUserName, CustomerNameSurname, PaymentMethod);
         }
     }
 }

@@ -1,16 +1,23 @@
-﻿namespace AppForSEII2526.API.DTOs.RentalDTOs
+﻿using System.Drawing;
+
+namespace AppForSEII2526.API.DTOs.RentalDTOs
 {
     public class RentalItemDTO
     {
-        public RentalItemDTO(int deviceId, string name, string brand, string model, double priceForRent, int quantity = 1)
+
+        public RentalItemDTO(int deviceId, string name, string brand, string model,
+                           double priceForRent, int quantity)
         {
             DeviceId = deviceId;
             Name = name;
             Brand = brand;
-            Model = model;
+            Model = model;           
             PriceForRent = priceForRent;
-            Quantity = quantity;
+            Quantity = quantity; 
         }
+
+
+       
 
         public int DeviceId { get; set; }
 
@@ -22,7 +29,7 @@
 
         public double PriceForRent { get; set; }
 
-        public int Quantity { get; set; } = 1;
+        public int Quantity { get; set; }
 
         public override bool Equals(object? obj)
         {
@@ -35,10 +42,13 @@
                    Quantity == dTO.Quantity;
         }
 
+
         public override int GetHashCode()
         {
             return HashCode.Combine(DeviceId, Name, Brand, Model, PriceForRent, Quantity);
         }
+
+
     }
 }
 

@@ -27,7 +27,7 @@
                 viewCommand.CommandText = @"
                 CREATE VIEW AllResources AS
                 SELECT Name
-                FROM Movies;";
+                FROM Devices;";
                 viewCommand.ExecuteNonQuery();
             }
         }

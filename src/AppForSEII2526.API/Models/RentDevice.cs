@@ -20,10 +20,18 @@ namespace AppForSEII2526.API.Models
             Quantity = quantity;
         }
 
+        public RentDevice(int id, Rental rental, double priceForRent, int quantity)
+        {
+            Id = id;
+            Rental = rental;
+            PriceForRent = priceForRent;
+            Quantity = quantity;
+        }
+
         //-----------------------------------
         //ATRIBUTOS
         //-----------------------------------
-        
+
         public int RentId { get; set; } //Primary Key
 
         [Required(ErrorMessage = "El ID del dispositivo es obligatorio")]
@@ -47,7 +55,8 @@ namespace AppForSEII2526.API.Models
         
         public Rental Rental { get; set; }
 
-        public Device Devices { get; set; }
-
+        public Device Device { get; set; }
+        public int Id { get; }
+        public double PriceForRent { get; }
     }
 }

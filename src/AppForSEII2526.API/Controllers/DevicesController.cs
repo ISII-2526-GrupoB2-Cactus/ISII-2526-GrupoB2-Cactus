@@ -90,6 +90,7 @@ namespace AppForSEII2526.API.Controllers
             return Ok(devices);
         }
 
+        /*
         [HttpGet]
         [Route("[action]")]
         [ProducesResponseType(typeof(IList<DeviceForPurchaseDTO>), (int)HttpStatusCode.OK)]
@@ -131,6 +132,7 @@ namespace AppForSEII2526.API.Controllers
 
             return Ok(devices);
         }
+        */
     }
 }
 

@@ -44,12 +44,27 @@
         [Range(0.5, float.MaxValue, ErrorMessage = "El precio minimo es 0.5 ")]
         [Display(Name = "Precio de alquiler")]
         [Precision(10, 2)]
-        public double PriceForRent { get; set; } 
-
-       
+        public double PriceForRent { get; set; }
 
 
-
+        public override bool Equals(object obj)
+        {
+            return obj is DeviceParaAlquilarDTO dTO &&
+                   Id == dTO.Id &&
+                   Name == dTO.Name &&
+                   Model == dTO.Model &&
+                   Brand == dTO.Brand &&
+                   Year == dTO.Year &&
+                   Color == dTO.Color &&
+                   PriceForRent == dTO.PriceForRent;
         }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Name, Model, Brand, Year, Color, PriceForRent);
+        }
+
+
+    }
 }
 
