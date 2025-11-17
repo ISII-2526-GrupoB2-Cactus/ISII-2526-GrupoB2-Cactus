@@ -77,7 +77,7 @@ namespace AppForSEII2526.UT.ReviewsController_test
             {
                 Id = 1,
                 CustomerUserName = "Lucia",
-                CustomerNameSurname = "Lucia Romero",
+                CustomerNameSurname = "Lucia Romero", //Me aparece un error aqui en la development 
                 ReviewDate = reviewFromDb.DateOfReview, 
                 ReviewItems = new List<ReviewItemDTO>
                 {
