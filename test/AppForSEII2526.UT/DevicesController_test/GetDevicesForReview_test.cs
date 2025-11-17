@@ -52,7 +52,8 @@ namespace AppForSEII2526.UT.DevicesController_test
                     Year = 2022,
                     Model = models[2]
                 }
-            };
+            }; 
+            /
 
             _context.Model.AddRange(models);
             _context.Device.AddRange(devices);
@@ -100,18 +101,10 @@ namespace AppForSEII2526.UT.DevicesController_test
             var okResult = Assert.IsType<OkObjectResult>(result);
             var actualDevices = Assert.IsType<List<DeviceForReviewDTO>>(okResult.Value);
 
-            Assert.Equal(expectedDevices.Count, actualDevices.Count);
-
-            for (int i = 0; i < expectedDevices.Count; i++)
-            {
-                Assert.Equal(expectedDevices[i].Id, actualDevices[i].Id);
-                Assert.Equal(expectedDevices[i].Brand, actualDevices[i].Brand);
-                Assert.Equal(expectedDevices[i].Name, actualDevices[i].Name);
-                Assert.Equal(expectedDevices[i].Year, actualDevices[i].Year);
-                Assert.Equal(expectedDevices[i].Model, actualDevices[i].Model);
-                Assert.Equal(expectedDevices[i].Color, actualDevices[i].Color);
-            }
+            //Comparación directa de DTOs usando el método Equals 
+            Assert.Equal(expectedDevices, actualDevices);
         }
+
 
         // Caso sin dispositivos que coincidan
         [Fact]
@@ -130,7 +123,7 @@ namespace AppForSEII2526.UT.DevicesController_test
             Assert.Equal("No se encontraron dispositivos que coincidan con los filtros aplicados.", message);
         }
 
-        // Caso tabla vacía - CORREGIDO
+        // Caso tabla vacía 
         [Fact]
         [Trait("Database", "WithoutFixture")]
         [Trait("LevelTesting", "Unit Testing")]
@@ -146,7 +139,7 @@ namespace AppForSEII2526.UT.DevicesController_test
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
             var message = Assert.IsType<string>(notFoundResult.Value);
 
-            // CAMBIADO: Usa el mensaje del segundo NotFound
+            
             Assert.Equal("No se encontraron dispositivos que coincidan con los filtros aplicados.", message);
         }
 
