@@ -23,6 +23,7 @@ namespace AppForSEII2526.API.Models
         {
         }
 
+        /*
         public Rental(string deliveryAddress, string nameCustomer, string surnameCustomer, decimal totalPrice, DateTime rentalDate, DateTime rentalDateFrom, DateTime rentalDateTo, PaymentMethodType paymentMethod)
         {
             DeliveryAddress = deliveryAddress;
@@ -34,7 +35,25 @@ namespace AppForSEII2526.API.Models
             RentalDateTo = rentalDateTo;
             PaymentMethod = paymentMethod;
         }
+        */
 
+        public Rental(string nameCustomer, string surnameCustomer, ApplicationUser applicationUser,
+                      string deliveryAddress, DateTime rentalDate, PaymentMethodType paymentMethod,
+                      DateTime rentalDateFrom, DateTime rentalDateTo, IList<RentDevice> rentDevices)
+        {
+            TotalPrice = rentDevices.Sum(rd => (decimal)rd.Price * (rentalDateTo - rentalDateFrom).Days);
+
+            // Asignar propiedades
+            RentalDateFrom = rentalDateFrom;
+            RentalDateTo = rentalDateTo;
+            RentalDate = rentalDate;
+            DeliveryAddress = deliveryAddress;
+            NameCustomer = nameCustomer;
+            SurnameCustomer = surnameCustomer;
+            ApplicationUser = applicationUser;
+            RentDevices = rentDevices;
+            PaymentMethod = paymentMethod;
+        }
 
         //---------------------------------------------------------------
         //ATRIBUTOS Y RESTRICCIONES
@@ -65,7 +84,7 @@ namespace AppForSEII2526.API.Models
         [Required(ErrorMessage = "El método de pago es obligatorio")]
         [EnumDataType(typeof(PaymentMethodType), ErrorMessage = "Método de pago no válido. Solo se permiten: Tarjeta de crédito, PayPal o Efectivo")]
         public PaymentMethodType PaymentMethod { get; set; }
-        
+
 
 
         //---------------------------------------------------------------
@@ -73,9 +92,11 @@ namespace AppForSEII2526.API.Models
         //---------------------------------------------------------------
 
         // Relación uno-a-muchos: Un Rental puede tener múltiples RentalItems
-        public IList<RentDevice> RentDevice { get; set; }
+        public IList<RentDevice> RentDevices { get; set; }
 
         public ApplicationUser ApplicationUser { get; set; }
+
+
 
         //---------------------------------------------------------------
         //MÉTODOS DE LA CLASE

@@ -1,5 +1,6 @@
 namespace AppForSEII2526.API.Models
 {
+    [PrimaryKey(nameof(DeviceId), nameof(RentId))]
     public class RentDevice
     {
 
@@ -18,7 +19,14 @@ namespace AppForSEII2526.API.Models
             Price = price;
             Quantity = quantity;
         }
-        
+
+        public RentDevice(int id, Rental rental, double priceForRent, int quantity)
+        {
+            Id = id;
+            Rental = rental;
+            PriceForRent = priceForRent;
+            Quantity = quantity;
+        }
 
         //-----------------------------------
         //ATRIBUTOS
@@ -44,11 +52,11 @@ namespace AppForSEII2526.API.Models
         //RELACIONES
         //-----------------------------------
 
-        //Relacion muchos a uno con Rental
-        public IList<Rental> Rental { get; set; }
 
-        //Relacion muchos a uno con Device
-        public IList<Device> Devices { get; set; }
+        public Rental Rental { get; set; }
 
+        public Device Device { get; set; }
+        public int Id { get; }
+        public double PriceForRent { get; }
     }
 }
