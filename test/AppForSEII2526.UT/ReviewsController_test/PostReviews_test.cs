@@ -14,7 +14,7 @@ namespace AppForSEII2526.UT.ReviewsController_test
 {
     public class PostReview_test : AppForSEII2526SqliteUT
     {
-       
+
         private const string _userName = "Lucia";
         private const string _customerNameSurname = "Lucia Romero";
         private const string _device1Name = "iPhone 15 Pro";
@@ -166,7 +166,7 @@ namespace AppForSEII2526.UT.ReviewsController_test
 
             var errorActual = problemDetails.Errors.First().Value[0];
 
-            
+
             Assert.StartsWith(errorExpected, errorActual);
         }
 
@@ -179,7 +179,7 @@ namespace AppForSEII2526.UT.ReviewsController_test
             var mock = new Mock<ILogger<ReviewsController>>();
             var controller = new ReviewsController(_context, mock.Object);
 
-           
+
             DateTime reviewDate = DateTime.Now.AddDays(-2);
 
             ReviewForCreateDTO reviewDTO = new ReviewForCreateDTO(
@@ -190,7 +190,7 @@ namespace AppForSEII2526.UT.ReviewsController_test
                 new List<ReviewItemDTO>());
             reviewDTO.ReviewItems.Add(new ReviewItemDTO(2, 5, "Samsung espectacular"));
 
-            
+
             ReviewDetailDTO expectedReviewDetailDTO = new ReviewDetailDTO(
                 1,
                 reviewDate,
