@@ -4,11 +4,7 @@ using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace AppForSEII2526.UT.ReviewsController_test
 {
@@ -72,20 +68,37 @@ namespace AppForSEII2526.UT.ReviewsController_test
             // Arrange
             var mockLogger = new Mock<ILogger<ReviewsController>>();
             var controller = new ReviewsController(_context, mockLogger.Object);
-            var reviewId = _context.Review.First().ReviewId;
+
+            // Obtener la review de la base de datos para tener los datos reales
+            var reviewFromDb = _context.Review.First();
+
+            // Crear el DTO esperado completo con las propiedades CORRECTAS
+            var expectedReview = new ReviewDetailDTO
+            {
+                Id = 1,
+                CustomerUserName = "Lucia",
+                CustomerNameSurname = "Lucia Romero",
+                ReviewDate = reviewFromDb.DateOfReview, 
+                ReviewItems = new List<ReviewItemDTO>
+                {
+                    new ReviewItemDTO
+                    {
+                        DeviceId = 1,
+                        Rating = 5,
+                        Comments = "iPhone espectacular, la cámara es increíble"
+                    }
+                }
+            };
 
             // Act
-            var result = await controller.GetReview(reviewId);
+            var result = await controller.GetReview(1);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var dto = Assert.IsType<ReviewDetailDTO>(okResult.Value);
+            var actualReview = Assert.IsType<ReviewDetailDTO>(okResult.Value);
 
-            Assert.Equal(reviewId, dto.Id);
-            Assert.Equal("Lucia", dto.CustomerUserName);
-            Assert.Equal("Lucia Romero", dto.CustomerNameSurname);
-            Assert.Single(dto.ReviewItems);
-            Assert.Equal("iPhone espectacular, la cámara es increíble", dto.ReviewItems.First().Comments);
+            //Cambio en el equals para comparar los DTOs
+            Assert.Equal(expectedReview, actualReview);
         }
 
         [Fact]

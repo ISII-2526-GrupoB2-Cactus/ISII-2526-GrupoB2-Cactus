@@ -14,15 +14,20 @@ namespace AppForSEII2526.UT.ReviewsController_test
 {
     public class PostReview_test : AppForSEII2526SqliteUT
     {
-        private const string _userName = "Lucia";  // CustomerUserName, no email
+       
+        private const string _userName = "Lucia";
         private const string _customerNameSurname = "Lucia Romero";
+        private const string _device1Name = "iPhone 15 Pro";
+        private const string _device1Brand = "Apple";
+        private const string _device2Name = "Samsung Galaxy S24";
+        private const string _device2Brand = "Samsung";
 
         public PostReview_test()
         {
             var user = new ApplicationUser
             {
                 Id = "1",
-                CustomerUserName = "Lucia",  // Esto es lo que busca el controller
+                CustomerUserName = _userName,
                 CustomerUserSurname = "Romero",
                 Email = "lucia.romero@alu.uclm.es",
                 UserName = "lucia.romero@alu.uclm.es"
@@ -36,9 +41,9 @@ namespace AppForSEII2526.UT.ReviewsController_test
                 new Device
                 {
                     Id = 1,
-                    Brand = "Apple",
+                    Brand = _device1Brand,
                     Color = "Negro",
-                    Name = "iPhone 15 Pro",
+                    Name = _device1Name,
                     PriceForPurchase = 1200,
                     QuantityForPurchase = 5,
                     Year = 2023,
@@ -47,9 +52,9 @@ namespace AppForSEII2526.UT.ReviewsController_test
                 new Device
                 {
                     Id = 2,
-                    Brand = "Samsung",
+                    Brand = _device2Brand,
                     Color = "Plateado",
-                    Name = "Samsung Galaxy S24",
+                    Name = _device2Name,
                     PriceForPurchase = 1000,
                     QuantityForPurchase = 3,
                     Year = 2024,
@@ -65,98 +70,81 @@ namespace AppForSEII2526.UT.ReviewsController_test
 
         public static IEnumerable<object[]> TestCasesFor_CreateReview()
         {
-            // CASO 1: Review sin items - DEBE SER EL PRIMERO
-            yield return new object[]
-            {
-                new ReviewForCreateDTO(
-                    "Lucia",  // CustomerUserName correcto
-                    "Lucia Romero",
-                    DateTime.Now.AddDays(-1),
-                    "Review sin items de al menos 10 caracteres",  // Mínimo 10 caracteres
-                    new List<ReviewItemDTO>()
-                ),
-                "Error! Debes incluir al menos un dispositivo para reseñar"
+            // Review sin items
+            ReviewForCreateDTO reviewNoItems = new ReviewForCreateDTO(
+                _userName,
+                _customerNameSurname,
+                DateTime.Now.AddDays(-1),
+                "Review sin items de al menos 10 caracteres",
+                new List<ReviewItemDTO>()
+            );
+
+            // Fecha futura
+            IList<ReviewItemDTO> reviewItems = new List<ReviewItemDTO>() {
+                new ReviewItemDTO(1, 4, "Buen dispositivo")
             };
 
-            // CASO 2: Fecha futura - SEGUNDO
-            yield return new object[]
+            ReviewForCreateDTO reviewFutureDate = new ReviewForCreateDTO(
+                _userName,
+                _customerNameSurname,
+                DateTime.Now.AddDays(1),
+                "Review futura titulo largo suficiente",
+                reviewItems
+            );
+
+            // Usuario no registrado
+            ReviewForCreateDTO applicationUserNotRegistered = new ReviewForCreateDTO(
+                "UsuarioInexistente",
+                "Usuario Inexistente",
+                DateTime.Now.AddDays(-1),
+                "Review usuario titulo largo suficiente",
+                reviewItems
+            );
+
+            // Dispositivo no existe
+            ReviewForCreateDTO reviewDeviceNotExists = new ReviewForCreateDTO(
+                _userName,
+                _customerNameSurname,
+                DateTime.Now.AddDays(-1),
+                "Review dispositivo titulo largo suficiente",
+                new List<ReviewItemDTO>() {
+                    new ReviewItemDTO(999, 4, "Dispositivo que no existe")
+                }
+            );
+
+            // Rating menor a 1
+            ReviewForCreateDTO reviewRatingTooLow = new ReviewForCreateDTO(
+                _userName,
+                _customerNameSurname,
+                DateTime.Now.AddDays(-1),
+                "Review rating bajo titulo largo",
+                new List<ReviewItemDTO>() {
+                    new ReviewItemDTO(1, 0, "Rating muy bajo")
+                }
+            );
+
+            // Rating mayor a 5
+            ReviewForCreateDTO reviewRatingTooHigh = new ReviewForCreateDTO(
+                _userName,
+                _customerNameSurname,
+                DateTime.Now.AddDays(-1),
+                "Review rating alto titulo largo",
+                new List<ReviewItemDTO>() {
+                    new ReviewItemDTO(1, 6, "Rating muy alto")
+                }
+            );
+
+            var allTests = new List<object[]>
             {
-                new ReviewForCreateDTO(
-                    "Lucia",
-                    "Lucia Romero",
-                    DateTime.Now.AddDays(1),  // Fecha futura
-                    "Review futura titulo largo suficiente",
-                    new List<ReviewItemDTO>()
-                    {
-                        new ReviewItemDTO(1, 4, "Buen dispositivo")
-                    }
-                ),
-                "Error! La fecha de reseña no puede ser futura"
+                new object[] { reviewNoItems, "Error! Debes incluir al menos un dispositivo para reseñar" },
+                new object[] { reviewFutureDate, "Error! La fecha de reseña no puede ser futura" },
+                new object[] { applicationUserNotRegistered, "Error! El nombre de usuario no está registrado" },
+                new object[] { reviewDeviceNotExists, "Error! El dispositivo con ID 999 no existe" },
+                new object[] { reviewRatingTooLow, "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5" },
+                new object[] { reviewRatingTooHigh, "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5" }
             };
 
-            // CASO 3: Usuario no registrado - TERCERO
-            yield return new object[]
-            {
-                new ReviewForCreateDTO(
-                    "UsuarioInexistente",  // CustomerUserName que no existe
-                    "Usuario Inexistente",
-                    DateTime.Now.AddDays(-1),
-                    "Review usuario titulo largo suficiente",
-                    new List<ReviewItemDTO>()
-                    {
-                        new ReviewItemDTO(1, 4, "Comentario")
-                    }
-                ),
-                "Error! El nombre de usuario no está registrado"
-            };
-
-            // CASO 4: Dispositivo no existe - CUARTO
-            yield return new object[]
-            {
-                new ReviewForCreateDTO(
-                    "Lucia",
-                    "Lucia Romero",
-                    DateTime.Now.AddDays(-1),
-                    "Review dispositivo titulo largo suficiente",
-                    new List<ReviewItemDTO>()
-                    {
-                        new ReviewItemDTO(999, 4, "Dispositivo que no existe")
-                    }
-                ),
-                "Error! El dispositivo con ID 999 no existe"
-            };
-
-            // CASO 5: Rating menor a 1 - QUINTO
-            yield return new object[]
-            {
-                new ReviewForCreateDTO(
-                    "Lucia",
-                    "Lucia Romero",
-                    DateTime.Now.AddDays(-1),
-                    "Review rating bajo titulo largo",
-                    new List<ReviewItemDTO>()
-                    {
-                        new ReviewItemDTO(1, 0, "Rating muy bajo")
-                    }
-                ),
-                "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5"
-            };
-
-            // CASO 6: Rating mayor a 5 - SEXTO
-            yield return new object[]
-            {
-                new ReviewForCreateDTO(
-                    "Lucia",
-                    "Lucia Romero",
-                    DateTime.Now.AddDays(-1),
-                    "Review rating alto titulo largo",
-                    new List<ReviewItemDTO>()
-                    {
-                        new ReviewItemDTO(1, 6, "Rating muy alto")
-                    }
-                ),
-                "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5"
-            };
+            return allTests;
         }
 
         [Theory]
@@ -176,11 +164,10 @@ namespace AppForSEII2526.UT.ReviewsController_test
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
 
-            // Buscar el error en todos los errores disponibles
-            var allErrors = problemDetails.Errors.Values.SelectMany(errors => errors).ToList();
+            var errorActual = problemDetails.Errors.First().Value[0];
 
-            // Verificar que existe algún error que contenga el texto esperado
-            Assert.Contains(allErrors, error => error.Contains(errorExpected));
+            
+            Assert.StartsWith(errorExpected, errorActual);
         }
 
         [Fact]
@@ -192,17 +179,25 @@ namespace AppForSEII2526.UT.ReviewsController_test
             var mock = new Mock<ILogger<ReviewsController>>();
             var controller = new ReviewsController(_context, mock.Object);
 
-            var reviewDate = DateTime.Now.AddDays(-2);
-            var reviewDTO = new ReviewForCreateDTO(
-                "Lucia",  // CustomerUserName correcto
-                "Lucia Romero",
+           
+            DateTime reviewDate = DateTime.Now.AddDays(-2);
+
+            ReviewForCreateDTO reviewDTO = new ReviewForCreateDTO(
+                _userName,
+                _customerNameSurname,
                 reviewDate,
-                "Excelente dispositivo Samsung con titulo largo",  // Más de 10 caracteres
-                new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(2, 5, "Samsung espectacular")
-                }
-            );
+                "Excelente dispositivo Samsung con titulo largo",
+                new List<ReviewItemDTO>());
+            reviewDTO.ReviewItems.Add(new ReviewItemDTO(2, 5, "Samsung espectacular"));
+
+            
+            ReviewDetailDTO expectedReviewDetailDTO = new ReviewDetailDTO(
+                1,
+                reviewDate,
+                _userName,
+                _customerNameSurname,
+                new List<ReviewItemDTO>());
+            expectedReviewDetailDTO.ReviewItems.Add(new ReviewItemDTO(2, 5, "Samsung espectacular"));
 
             // Act
             var result = await controller.CreateReview(reviewDTO);
@@ -211,12 +206,7 @@ namespace AppForSEII2526.UT.ReviewsController_test
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
             var actualReviewDetailDTO = Assert.IsType<ReviewDetailDTO>(createdResult.Value);
 
-            Assert.Equal("Lucia", actualReviewDetailDTO.CustomerUserName);
-            Assert.Equal("Lucia Romero", actualReviewDetailDTO.CustomerNameSurname);
-            Assert.Single(actualReviewDetailDTO.ReviewItems);
-            Assert.Equal(2, actualReviewDetailDTO.ReviewItems.First().DeviceId);
-            Assert.Equal(5, actualReviewDetailDTO.ReviewItems.First().Rating);
-            Assert.Equal(5.0, actualReviewDetailDTO.AverageRating);
+            Assert.Equal(expectedReviewDetailDTO, actualReviewDetailDTO);
         }
     }
 }
