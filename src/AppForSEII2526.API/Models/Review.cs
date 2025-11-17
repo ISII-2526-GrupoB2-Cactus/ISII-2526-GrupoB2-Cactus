@@ -14,36 +14,42 @@ namespace AppForSEII2526.API.Models
             ReviewItems = new List<ReviewItem>();
         }
 
-        public Review(int customerId, int customerCount, DateTime dateOfReview, int overallRating, bool reviewed, string reviewTitle, IList<ReviewItem> reviewItems)
+        public Review(int reviewId, string customerId, DateTime dateOfReview, int overallRating, string reviewTitle)
         {
+            ReviewId = reviewId;
             CustomerId = customerId;
-            CustomerCount = customerCount;
             DateOfReview = dateOfReview;
             OverallRating = overallRating;
-            Reviewed = reviewed;
             ReviewTitle = reviewTitle;
-            ReviewItems = reviewItems;
+            ReviewItems = new List<ReviewItem>();
         }
 
-        public int CustomerId { get; set; }
 
-        [Range(1, 200, ErrorMessage = "Minimum 1, Maximum 200")]
-        public int CustomerCount { get; set; }
+        [Key]
+        public int ReviewId { get; set; }
 
+        [Required]
+        [StringLength(50, ErrorMessage = "El nombre tiene que tener entre 10 y 50 caracteres", MinimumLength = 10)]
+        public string CustomerId { get; set; }
+
+
+        [Required]
         [DataType(DataType.Date)]
         [Display(Name = "Date of Review")]
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime DateOfReview { get; set; }
 
-        [Range(1, 200, ErrorMessage = "Minimum 1, Maximum 200")]
+        [Range(1, 5, ErrorMessage = "La valoración global debe estar entre 1 y 5.")]
         public int OverallRating { get; set; }
 
-        public bool Reviewed { get; set; }
 
-        [StringLength(50, ErrorMessage = "Name can be neither longer than 50 characters nor shorter than 10.", MinimumLength = 10)]
+        [StringLength(50, ErrorMessage = "El nombre tiene que tener entre 10 y 50 caracteres", MinimumLength = 10)]
         public string ReviewTitle { get; set; }
 
-        public IList<ReviewItem> ReviewItems { get; set; }
+        public IList<ReviewItem> ReviewItems { get; set; } //Atributo para relacion
+
+  
+        public ApplicationUser ApplicationUser { get; set; } //Atributo con claser relacion ApplicationUser
     }
 
 }

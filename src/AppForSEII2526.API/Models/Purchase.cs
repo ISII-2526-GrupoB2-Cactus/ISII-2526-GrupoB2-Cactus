@@ -20,11 +20,9 @@ namespace AppForSEII2526.API.Models
 
 
 
-        public Purchase(int id, string customerUserName, string customerUserSurname, string deliveryAddress, DateTime purchaseDate, double totalPrice, int totalQuantity, PaymentMethod paymentMethod, IList<PurchaseItem> purchaseItems)
+        public Purchase(int id, string deliveryAddress, DateTime purchaseDate, double totalPrice, int totalQuantity, PaymentMethod paymentMethod, IList<PurchaseItem> purchaseItems)
         {
             Id = id;
-            CustomerUserName = customerUserName;
-            CustomerUserSurname = customerUserSurname;
             DeliveryAddress = deliveryAddress;
             PurchaseDate = purchaseDate;
             TotalPrice = totalPrice;
@@ -36,12 +34,6 @@ namespace AppForSEII2526.API.Models
 
         [Key]
         public int Id { get; set; }
-
-        [Required, StringLength(20, ErrorMessage = "El nombre no puede tener más de 20 caracteres")]
-        public string CustomerUserName { get; set; }
-
-        [Required, StringLength(30, ErrorMessage = "El apellido no puede tener más de 30 caracteres")]
-        public string CustomerUserSurname { get; set; }
 
         [Required, StringLength(50, ErrorMessage = "La direccion no puede tener más de 50 caracteres")]
         public string DeliveryAddress { get; set; }
@@ -63,7 +55,7 @@ namespace AppForSEII2526.API.Models
         public IList<PurchaseItem> PurchaseItems { get; set; } //esto es lo que me genera la relacion
 
 
-
+        public ApplicationUser ApplicationUser { get; set; }//relacion con la clase applicationuser
 
 
 

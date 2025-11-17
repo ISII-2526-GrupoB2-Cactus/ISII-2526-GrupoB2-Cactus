@@ -2,6 +2,7 @@
 
 namespace AppForSEII2526.API.Models
 {
+    [PrimaryKey(nameof(DeviceId),nameof(PurchaseId))]
     public class PurchaseItem
     {
         public PurchaseItem()
@@ -23,6 +24,7 @@ namespace AppForSEII2526.API.Models
 
         public Purchase Purchase { get; set; } //relacion con la clase Purchase
 
+        [Key]
         public int PurchaseId { get; set; }
 
         public Device Device { get; set; } //relacion con la clase Device
