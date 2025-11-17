@@ -10,7 +10,7 @@
         }
         public ReviewItemDTO()
         {
-        }
+        } //nuevo dto
 
         public int DeviceId { get; set; }
 

@@ -20,7 +20,7 @@
         public ReviewForCreateDTO()
         {
             ReviewItems = new List<ReviewItemDTO>();
-            ReviewTitle = string.Empty;
+            ReviewTitle = string.Empty; //Dto nuevo con nuevas modificaciones
         }
 
         [Required]

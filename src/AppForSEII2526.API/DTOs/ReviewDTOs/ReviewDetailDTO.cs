@@ -13,7 +13,7 @@
             CustomerUserName = customerUserName;
             CustomerNameSurname = customerNameSurname;
             ReviewItems = reviewItems;
-        }
+        } //nuevo dto
 
         public ReviewDetailDTO()
         {
