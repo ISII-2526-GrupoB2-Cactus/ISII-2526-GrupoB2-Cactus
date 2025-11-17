@@ -96,5 +96,6 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
         {
             return HashCode.Combine(RentalDateFrom, RentalDateTo, DeliveryAddress, CustomerUserName, CustomerNameSurname, PaymentMethod);
         }
+        
     }
 }

@@ -46,7 +46,7 @@ namespace AppForSEII2526.API.Models
         [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser al menos 1")]
         public int Quantity { get; set; }
 
-
+        
 
         //-----------------------------------
         //RELACIONES

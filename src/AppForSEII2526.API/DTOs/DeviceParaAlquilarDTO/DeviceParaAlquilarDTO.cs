@@ -63,7 +63,7 @@
         {
             return HashCode.Combine(Id, Name, Model, Brand, Year, Color, PriceForRent);
         }
-
+        
 
     }
 }

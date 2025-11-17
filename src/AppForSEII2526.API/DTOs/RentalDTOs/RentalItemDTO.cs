@@ -41,6 +41,7 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
                    PriceForRent == dTO.PriceForRent &&
                    Quantity == dTO.Quantity;
         }
+        
 
 
         public override int GetHashCode()

@@ -38,6 +38,7 @@
         {
             return HashCode.Combine(base.GetHashCode(), Id, RentalDate);
         }
+        
 
         /*
         public override bool Equals(object? obj)

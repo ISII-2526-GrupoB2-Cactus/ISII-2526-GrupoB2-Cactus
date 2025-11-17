@@ -12,7 +12,7 @@ namespace AppForSEII2526.API.Models
         PayPal,        // PayPal
         Cash           // Efectivo
     }
-
+    
 
     public class Rental
     {
