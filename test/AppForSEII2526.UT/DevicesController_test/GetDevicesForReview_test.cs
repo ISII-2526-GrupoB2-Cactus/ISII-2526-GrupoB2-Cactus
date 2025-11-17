@@ -53,7 +53,7 @@ namespace AppForSEII2526.UT.DevicesController_test
                     Model = models[2]
                 }
             }; 
-            /
+            
 
             _context.Model.AddRange(models);
             _context.Device.AddRange(devices);
