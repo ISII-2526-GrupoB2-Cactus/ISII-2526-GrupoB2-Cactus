@@ -247,7 +247,82 @@ namespace AppForSEII2526.API.Data
 
         private static void SeedReviews(ApplicationDbContext db)
         {
+            if (db.Review.Any()) return;
 
+            var users = db.Users.Take(3).ToList();
+
+            if (!users.Any()) return;
+
+            var reviews = new List<Review>
+    {
+        new Review
+        {
+            CustomerId = users[0].Id,
+            DateOfReview = DateTime.Now.AddDays(-10),
+            OverallRating = 5,
+            ReviewTitle = "Excelente experiencia de compra",
+            ApplicationUser = users[0]
+        },
+        new Review
+        {
+            CustomerId = users[1].Id,
+            DateOfReview = DateTime.Now.AddDays(-8),
+            OverallRating = 4,
+            ReviewTitle = "Muy buena atención al cliente",
+            ApplicationUser = users[1]
+        },
+        new Review
+        {
+            CustomerId = users[2].Id,
+            DateOfReview = DateTime.Now.AddDays(-15),
+            OverallRating = 5,
+            ReviewTitle = "Servicio rápido y eficiente",
+            ApplicationUser = users[2]
+        },
+        new Review
+        {
+            CustomerId = users[0].Id,
+            DateOfReview = DateTime.Now.AddDays(-12),
+            OverallRating = 3,
+            ReviewTitle = "Producto bueno con entrega regular",
+            ApplicationUser = users[0]
+        },
+        new Review
+        {
+            CustomerId = users[1].Id,
+            DateOfReview = DateTime.Now.AddDays(-5),
+            OverallRating = 5,
+            ReviewTitle = "Calidad premium garantizada",
+            ApplicationUser = users[1]
+        },
+        new Review
+        {
+            CustomerId = users[2].Id,
+            DateOfReview = DateTime.Now.AddDays(-3),
+            OverallRating = 4,
+            ReviewTitle = "Buen precio y buena calidad",
+            ApplicationUser = users[2]
+        },
+        new Review
+        {
+            CustomerId = users[0].Id,
+            DateOfReview = DateTime.Now.AddDays(-7),
+            OverallRating = 5,
+            ReviewTitle = "Recomendado totalmente",
+            ApplicationUser = users[0]
+        },
+        new Review
+        {
+            CustomerId = users[1].Id,
+            DateOfReview = DateTime.Now.AddDays(-2),
+            OverallRating = 4,
+            ReviewTitle = "Satisfecho con la compra",
+            ApplicationUser = users[1]
+        }
+    };
+
+            db.Review.AddRange(reviews);
+            db.SaveChanges();
         }
 
 
@@ -257,7 +332,78 @@ namespace AppForSEII2526.API.Data
 
         private static void SeedRentals(ApplicationDbContext db)
         {
+            if (db.Rental.Any()) return;
 
+            var users = db.Users.Take(3).ToList();
+
+            if (!users.Any()) return;
+
+            var rentals = new List<Rental>
+    {
+        new Rental
+        {
+            DeliveryAddress = "Avda España 33, Albacete",
+            NameCustomer = "Laura",
+            SurnameCustomer = "Gonzalez Rico",
+            TotalPrice = 150.50m,
+            RentalDate = DateTime.Now.AddDays(-5),
+            RentalDateFrom = DateTime.Now.AddDays(-5),
+            RentalDateTo = DateTime.Now.AddDays(2),
+            PaymentMethod = PaymentMethodType.CreditCard,
+            ApplicationUser = users[0]
+        },
+        new Rental
+        {
+            DeliveryAddress = "Calle Mayor 12, Toledo",
+            NameCustomer = "Elena",
+            SurnameCustomer = "Organero Maroto",
+            TotalPrice = 89.99m,
+            RentalDate = DateTime.Now.AddDays(-3),
+            RentalDateFrom = DateTime.Now.AddDays(-3),
+            RentalDateTo = DateTime.Now.AddDays(7),
+            PaymentMethod = PaymentMethodType.PayPal,
+            ApplicationUser = users[1]
+        },
+        new Rental
+        {
+            DeliveryAddress = "Calle Libertad 9, Ciudad Real",
+            NameCustomer = "Maria",
+            SurnameCustomer = "Martinez Gonzalez",
+            TotalPrice = 220.75m,
+            RentalDate = DateTime.Now.AddDays(-1),
+            RentalDateFrom = DateTime.Now.AddDays(-1),
+            RentalDateTo = DateTime.Now.AddDays(14),
+            PaymentMethod = PaymentMethodType.CreditCard,
+            ApplicationUser = users[2]
+        },
+        new Rental
+        {
+            DeliveryAddress = "Avda de la Mancha 77, Albacete",
+            NameCustomer = "Laura",
+            SurnameCustomer = "Gonzalez Rico",
+            TotalPrice = 300.00m,
+            RentalDate = DateTime.Now.AddDays(-7),
+            RentalDateFrom = DateTime.Now.AddDays(-7),
+            RentalDateTo = DateTime.Now.AddDays(0),
+            PaymentMethod = PaymentMethodType.Cash,
+            ApplicationUser = users[0]
+        },
+        new Rental
+        {
+            DeliveryAddress = "Calle Valencia 30, Cuenca",
+            NameCustomer = "Elena",
+            SurnameCustomer = "Organero Maroto",
+            TotalPrice = 175.25m,
+            RentalDate = DateTime.Now.AddDays(-2),
+            RentalDateFrom = DateTime.Now.AddDays(-2),
+            RentalDateTo = DateTime.Now.AddDays(5),
+            PaymentMethod = PaymentMethodType.PayPal,
+            ApplicationUser = users[1]
+        }
+    };
+
+            db.Rental.AddRange(rentals);
+            db.SaveChanges();
         }
 
     }
