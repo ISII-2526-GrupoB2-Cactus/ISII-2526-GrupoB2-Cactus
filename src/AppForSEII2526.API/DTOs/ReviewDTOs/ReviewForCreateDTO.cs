@@ -1,4 +1,4 @@
-﻿namespace AppForSEII2526.API.DTOs.ReviewDTOs
+namespace AppForSEII2526.API.DTOs.ReviewDTOs
 {
     using System;
     using System.Collections.Generic;
