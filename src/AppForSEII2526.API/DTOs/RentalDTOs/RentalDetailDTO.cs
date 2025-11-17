@@ -54,5 +54,6 @@
             return HashCode.Combine(base.GetHashCode(), Id, RentalDate);
         }
         */
+        
     }
 }

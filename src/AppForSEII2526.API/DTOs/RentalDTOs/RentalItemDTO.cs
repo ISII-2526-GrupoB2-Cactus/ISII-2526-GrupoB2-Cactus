@@ -48,7 +48,7 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
             return HashCode.Combine(DeviceId, Name, Brand, Model, PriceForRent, Quantity);
         }
 
-
+        
     }
 }
 
