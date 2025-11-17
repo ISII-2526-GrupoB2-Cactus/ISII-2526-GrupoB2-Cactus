@@ -18,6 +18,7 @@ namespace AppForSEII2526.API.Models
             Price = price;
             Quantity = quantity;
         }
+        
 
         //-----------------------------------
         //ATRIBUTOS

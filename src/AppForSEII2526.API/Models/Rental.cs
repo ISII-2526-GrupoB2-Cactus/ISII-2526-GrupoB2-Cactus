@@ -65,7 +65,7 @@ namespace AppForSEII2526.API.Models
         [Required(ErrorMessage = "El método de pago es obligatorio")]
         [EnumDataType(typeof(PaymentMethodType), ErrorMessage = "Método de pago no válido. Solo se permiten: Tarjeta de crédito, PayPal o Efectivo")]
         public PaymentMethodType PaymentMethod { get; set; }
-
+        
 
 
         //---------------------------------------------------------------
