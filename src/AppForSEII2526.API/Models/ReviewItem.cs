@@ -10,6 +10,12 @@ namespace AppForSEII2526.API.Models
         {
 
         }
+        public ReviewItem(int deviceId, Review review, int rating)
+        {
+            DeviceId = deviceId;
+            Review = review;
+            Rating = rating;
+        }
         public ReviewItem(string? comments, int rating, int reviewId, int deviceId)
         {
             Comments = comments;

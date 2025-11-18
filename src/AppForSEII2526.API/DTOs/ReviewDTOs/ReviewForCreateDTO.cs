@@ -48,11 +48,11 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
 
         [Display(Name = "Puntuación promedio")]
         [JsonPropertyName("AverageRating")]
-        public double AverageRating
+        public int AverageRating
         {
             get
             {
-                return ReviewItems.Any() ? ReviewItems.Average(r => r.Rating) : 0;
+                return (int)(ReviewItems.Any() ? ReviewItems.Average(r => r.Rating) : 0);
             }
         }
 

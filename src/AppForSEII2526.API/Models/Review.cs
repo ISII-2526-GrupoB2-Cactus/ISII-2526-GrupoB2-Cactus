@@ -14,14 +14,14 @@ namespace AppForSEII2526.API.Models
             ReviewItems = new List<ReviewItem>();
         }
 
-        public Review(int reviewId, string customerId, DateTime dateOfReview, int overallRating, string reviewTitle)
+        public Review(string customerId, DateTime dateOfReview, int overallRating, string reviewTitle,IList<ReviewItem> reviewItems, ApplicationUser user)
         {
-            ReviewId = reviewId;
             CustomerId = customerId;
             DateOfReview = dateOfReview;
             OverallRating = overallRating;
             ReviewTitle = reviewTitle;
-            ReviewItems = new List<ReviewItem>();
+            ReviewItems = reviewItems;
+            ApplicationUser = user;
         }
 
 
