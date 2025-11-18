@@ -5,14 +5,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-
 namespace AppForSEII2526.UT.ReviewsController_test
 {
     public class GetReview_test : AppForSEII2526SqliteUT
     {
         public GetReview_test()
         {
-            var user = new ApplicationUser
+            //////////////////////////////////////////////////////
+            //PRUEBAS PARA COMPROBAR EL GET DEL CONTROLLER REVIEWS
+            //////////////////////////////////////////////////////
+            var user = new ApplicationUser //Creamos los objetos para guardar en la bd
             {
                 Id = "1",
                 CustomerUserName = "Lucia",
@@ -21,7 +23,11 @@ namespace AppForSEII2526.UT.ReviewsController_test
                 UserName = "lucia.romero@alu.uclm.es"
             };
 
-            var model = new Model { Id = 1, Name = "iPhone 15" };
+            var model = new Model
+            {
+                Id = 1,
+                Name = "iPhone 15"
+            };
 
             var device = new Device
             {
@@ -30,91 +36,84 @@ namespace AppForSEII2526.UT.ReviewsController_test
                 Color = "Negro",
                 Name = "iPhone 15 Pro",
                 PriceForPurchase = 1200,
-                QuantityForPurchase = 5,
+                PriceForRent = 50,
                 Year = 2023,
-                Model = model
+                Quality = Device.QualityType.New,
+                QuantityForPurchase = 5,
+                QuantityForRent = 3,
+                Model = model //Creamos el dispositivo asociado al model de antes
             };
 
             var review = new Review
             {
                 ReviewId = 1,
+                CustomerId = "1",
                 DateOfReview = DateTime.Now.AddDays(-5),
                 OverallRating = 5,
                 ReviewTitle = "Excelente smartphone",
-                ApplicationUser = user,
-                ReviewItems = new List<ReviewItem>
-                {
-                    new ReviewItem
-                    {
-                        DeviceId = device.Id,
-                        Rating = 5,
-                        Comments = "iPhone espectacular, la cámara es increíble"
-                    }
-                }
+                ApplicationUser = user
             };
 
-            _context.Add(user);
-            _context.Add(model);
-            _context.Add(device);
+            var reviewItem = new ReviewItem
+            {
+                DeviceId = device.Id,
+                ReviewId = review.ReviewId,
+                Rating = 5,
+                Comments = "iPhone espectacular, la cámara es increíble",
+                Device = device,
+                Review = review
+            };
+
+            review.ReviewItems = new List<ReviewItem> { reviewItem }; //Junta el reviewItem con la review
+
+            _context.Users.Add(user); //Añadimos los objetos a la bd
+            _context.Model.Add(model);
+            _context.Device.Add(device);
             _context.Review.Add(review);
+            _context.ReviewItem.Add(reviewItem);
             _context.SaveChanges();
         }
 
         [Fact]
         [Trait("Database", "WithoutFixture")]
         [Trait("LevelTesting", "Unit Testing")]
-        public async Task GetReview_OK_test()
+        public async Task GetReview_NotFound_test() //No devuelve nada porque es un test
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<ReviewsController>>(); //Crea un objeto falso
+            ILogger<ReviewsController> logger = mock.Object;
 
-            // Obtener la review de la base de datos para tener los datos reales
-            var reviewFromDb = _context.Review.First();
+            var controller = new ReviewsController(_context, logger); //Creamos el controlador real y le pasamos la bd y el logger falso
 
-            // Crear el DTO esperado completo con las propiedades CORRECTAS
-            var expectedReview = new ReviewDetailDTO
-            {
-                Id = 1,
-                CustomerUserName = "Lucia",
-                CustomerNameSurname = "Lucia Romero", //Me aparece un error aqui en la development 
-                ReviewDate = reviewFromDb.DateOfReview,
-                ReviewItems = new List<ReviewItemDTO>
-                {
-                    new ReviewItemDTO
-                    {
-                        DeviceId = 1,
-                        Rating = 5,
-                        Comments = "iPhone espectacular, la cámara es increíble"
-                    }
-                }
-            };
+            // Act: Le vamos a pasar un id 0 que no existe y tiene que devolver (No encontrado)
+            var result = await controller.GetReview(0);
 
-            // Act
-            var result = await controller.GetReview(1);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var actualReview = Assert.IsType<ReviewDetailDTO>(okResult.Value);
-
-            //Cambio en el equals para comparar los DTOs
-            Assert.Equal(expectedReview, actualReview);
+            //Assert: Mira si el resultado es no econtrado
+            Assert.IsType<NotFoundResult>(result);
         }
 
         [Fact]
-        [Trait("Database", "WithoutFixture")]
         [Trait("LevelTesting", "Unit Testing")]
-        public async Task GetReview_NotFound_test()
+        [Trait("Database", "WithoutFixture")]
+        public async Task GetReview_Found_test()
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<ReviewsController>>();
-            var controller = new ReviewsController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<ReviewsController>>();
+            ILogger<ReviewsController> logger = mock.Object;
+            var controller = new ReviewsController(_context, logger);
 
-            // Act
-            var result = await controller.GetReview(999);
+            var expectedReview = new ReviewDetailDTO(1, DateTime.Now.AddDays(-5), "Lucia", "Lucia Romero", 
+                        new List<ReviewItemDTO>());
+            expectedReview.ReviewItems.Add(new ReviewItemDTO(1, 5, "iPhone espectacular, la cámara es increíble"));//Creamos un objeto reviewDetailDTO esperado
 
-            // Assert
-            Assert.IsType<NotFoundResult>(result);
+            // Act 
+            var result = await controller.GetReview(1); //Buscamos la review 1 y como existe tiene que devolver lo esperado
+
+            //Assert
+            var okResult = Assert.IsType<OkObjectResult>(result); //Mira si el resultado es OkObjectResult
+            var reviewDTOActual = Assert.IsType<ReviewDetailDTO>(okResult.Value); //Mira que sea tipo DTO
+            var eq = expectedReview.Equals(reviewDTOActual);
+            Assert.Equal(expectedReview, reviewDTOActual); //Mira si el DTO coincide con expectedReview
         }
     }
 }
