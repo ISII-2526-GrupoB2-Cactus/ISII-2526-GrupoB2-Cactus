@@ -3,11 +3,7 @@
     
      public class ReviewDetailDTO
  {
-     public ReviewDetailDTO(int id,
-                       DateTime reviewDate,
-                       string customerUserName,
-                       string customerNameSurname,
-                       IList<ReviewItemDTO> reviewItems)
+     public ReviewDetailDTO(int id,DateTime reviewDate,string customerUserName,string customerNameSurname,IList<ReviewItemDTO> reviewItems)
      {
          Id = id;
          ReviewDate = reviewDate;
