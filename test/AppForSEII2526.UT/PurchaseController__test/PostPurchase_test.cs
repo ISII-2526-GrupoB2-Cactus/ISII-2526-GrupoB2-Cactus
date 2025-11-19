@@ -32,10 +32,10 @@ namespace AppForSEII2526.UT.PurchaseController_test
             var user = new ApplicationUser
             {
                 Id = "1",
-                CustomerUserName = "Lucia",
-                CustomerUserSurname = "Romero",
-                Email = "lucia.romero@alu.uclm.es",
-                UserName = "lucia.romero@alu.uclm.es"
+                CustomerUserName = "Laura",
+                CustomerUserSurname = "Gonzalez",
+                Email = "laura.gonzalez@alu.uclm.es",
+                UserName = "laura.gonzalez@alu.uclm.es"
             };
 
             _context.Add(model);
@@ -50,14 +50,15 @@ namespace AppForSEII2526.UT.PurchaseController_test
         public async Task CreatePurchase_OK_test()
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<PurchaseController>>();
-            var controller = new PurchaseController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<PurchaseController>>();
+            ILogger<PurchaseController> logger = mock.Object;
+            var controller = new PurchaseController(_context, logger);
 
             var dto = new PurchaseForCreateDTO
             {
                 DeliveryAddress = "Calle Mayor 22, Madrid",
-                CustomerName = "Lucia",
-                CustomerSurname = "Romero",
+                CustomerName = "Laura",
+                CustomerSurname = "Gonzalez",
                 PaymentMethod = PaymentMethod.CreditCard,
                 PurchaseItems = new List<PurchaseItemDTO>
                 {
@@ -72,7 +73,7 @@ namespace AppForSEII2526.UT.PurchaseController_test
             var created = Assert.IsType<CreatedAtActionResult>(result);
             var purchaseDetail = Assert.IsType<PurchaseDetailDTO>(created.Value);
 
-            Assert.Equal("Lucia", purchaseDetail.CustomerName);
+            Assert.Equal("Laura", purchaseDetail.CustomerName);
             Assert.Single(purchaseDetail.PurchaseItems);
             Assert.Equal("iPhone 15", purchaseDetail.PurchaseItems.First().Model);
         }
@@ -83,8 +84,9 @@ namespace AppForSEII2526.UT.PurchaseController_test
         public async Task CreatePurchase_BadRequest_UserNotFound_test()
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<PurchaseController>>();
-            var controller = new PurchaseController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<PurchaseController>>();
+            ILogger<PurchaseController> logger = mock.Object;
+            var controller = new PurchaseController(_context, logger);
 
             var dto = new PurchaseForCreateDTO
             {
@@ -112,14 +114,15 @@ namespace AppForSEII2526.UT.PurchaseController_test
         public async Task CreatePurchase_BadRequest_DeviceNotFound_test()
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<PurchaseController>>();
-            var controller = new PurchaseController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<PurchaseController>>();
+            ILogger<PurchaseController> logger = mock.Object;
+            var controller = new PurchaseController(_context, logger);
 
             var dto = new PurchaseForCreateDTO
             {
                 DeliveryAddress = "Calle Falsa 123",
-                CustomerName = "Lucia",
-                CustomerSurname = "Romero",
+                CustomerName = "Laura",
+                CustomerSurname = "Gonzalez",
                 PaymentMethod = PaymentMethod.CreditCard,
                 PurchaseItems = new List<PurchaseItemDTO>
                 {

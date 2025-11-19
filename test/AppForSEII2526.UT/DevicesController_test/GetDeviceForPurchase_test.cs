@@ -106,8 +106,9 @@ namespace AppForSEII2526.UT.DevicesController_test
         public async Task GetDeviceForPurchase_OK_test(string? name, string? color, IList<DeviceForPurchaseDTO> expectedDevices)
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<DevicesController>>();
-            var controller = new DevicesController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+            var controller = new DevicesController(_context, logger);
 
             // Act
             var result = await controller.GetDeviceForPurchase(name, color);
@@ -143,8 +144,10 @@ namespace AppForSEII2526.UT.DevicesController_test
         [Trait("LevelTesting", "Unit Testing")]
         public async Task GetDeviceForPurchase_BadRequest_WhenColorNotFound_test()
         {
-            var mockLogger = new Mock<ILogger<DevicesController>>();
-            var controller = new DevicesController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+            var controller = new DevicesController(_context, logger);
+
 
             // Act
             var result = await controller.GetDeviceForPurchase(null, "Verde");
@@ -162,8 +165,9 @@ namespace AppForSEII2526.UT.DevicesController_test
         [Trait("LevelTesting", "Unit Testing")]
         public async Task GetDeviceForPurchase_BadRequest_WhenNameNotFound_test()
         {
-            var mockLogger = new Mock<ILogger<DevicesController>>();
-            var controller = new DevicesController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+            var controller = new DevicesController(_context, logger);
 
             // Act
             var result = await controller.GetDeviceForPurchase("Motorola", null);
@@ -182,8 +186,9 @@ namespace AppForSEII2526.UT.DevicesController_test
         public async Task GetDeviceForPurchase_NotFound_WhenTableEmpty_test()
         {
             var emptyContext = CreateEmptyContext();
-            var mockLogger = new Mock<ILogger<DevicesController>>();
-            var controller = new DevicesController(emptyContext, mockLogger.Object);
+            var mock = new Mock<ILogger<DevicesController>>();
+            ILogger<DevicesController> logger = mock.Object;
+            var controller = new DevicesController(_context, logger);
 
             // Act
             var result = await controller.GetDeviceForPurchase(null, null);

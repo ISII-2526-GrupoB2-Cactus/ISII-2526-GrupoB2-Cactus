@@ -58,7 +58,7 @@ namespace AppForSEII2526.API.Controllers
             if (purchase == null)
             {
                 _logger.LogError($"Error: No existe ninguna compra con id {id}.");
-                return NotFound($"No existe ninguna compra con id {id}.");
+                return NotFound();
             }
 
             _logger.LogInformation($"Compra encontrada con ID {id}.");
