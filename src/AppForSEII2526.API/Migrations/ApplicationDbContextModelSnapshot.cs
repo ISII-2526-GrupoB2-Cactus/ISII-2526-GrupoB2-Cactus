@@ -544,19 +544,19 @@ namespace AppForSEII2526.API.Migrations
 
             modelBuilder.Entity("AppForSEII2526.API.Models.RentDevice", b =>
                 {
-                    b.HasOne("AppForSEII2526.API.Models.Device", "Devices")
+                    b.HasOne("AppForSEII2526.API.Models.Device", "Device")
                         .WithMany("RentedDevices")
                         .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("AppForSEII2526.API.Models.Rental", "Rental")
-                        .WithMany("RentDevice")
+                        .WithMany("RentDevices")
                         .HasForeignKey("RentalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Devices");
+                    b.Navigation("Device");
 
                     b.Navigation("Rental");
                 });
@@ -679,7 +679,7 @@ namespace AppForSEII2526.API.Migrations
 
             modelBuilder.Entity("AppForSEII2526.API.Models.Rental", b =>
                 {
-                    b.Navigation("RentDevice");
+                    b.Navigation("RentDevices");
                 });
 
             modelBuilder.Entity("AppForSEII2526.API.Models.Review", b =>
