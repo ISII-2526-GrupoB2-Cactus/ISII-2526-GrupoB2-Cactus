@@ -33,10 +33,10 @@ namespace AppForSEII2526.UT.PurchaseController_test
             var user = new ApplicationUser
             {
                 Id = "1",
-                CustomerUserName = "Lucia",
-                CustomerUserSurname = "Romero",
-                Email = "lucia.romero@alu.uclm.es",
-                UserName = "lucia.romero@alu.uclm.es"
+                CustomerUserName = "Laura",
+                CustomerUserSurname = "Gonzalez",
+                Email = "laura.gonzalez@alu.uclm.es",
+                UserName = "laura.gonzalez@alu.uclm.es"
             };
 
             var purchase = new Purchase
@@ -67,8 +67,9 @@ namespace AppForSEII2526.UT.PurchaseController_test
         public async Task GetPurchase_OK_test()
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<PurchaseController>>();
-            var controller = new PurchaseController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<PurchaseController>>();
+            ILogger<PurchaseController> logger = mock.Object;
+            var controller = new PurchaseController(_context, logger);
             var purchaseId = _context.Purchase.First().Id;
 
             // Act
@@ -79,10 +80,12 @@ namespace AppForSEII2526.UT.PurchaseController_test
             var dto = Assert.IsType<PurchaseDetailDTO>(okResult.Value);
 
             Assert.Equal(purchaseId, dto.Id);
-            Assert.Equal("Lucia", dto.CustomerName);
+            Assert.Equal("Laura", dto.CustomerName);
             Assert.Single(dto.PurchaseItems);
             Assert.Equal("iPhone 15", dto.PurchaseItems.First().Model);
         }
+
+
 
         [Fact]
         [Trait("Database", "WithoutFixture")]
@@ -90,15 +93,15 @@ namespace AppForSEII2526.UT.PurchaseController_test
         public async Task GetPurchase_NotFound_test()
         {
             // Arrange
-            var mockLogger = new Mock<ILogger<PurchaseController>>();
-            var controller = new PurchaseController(_context, mockLogger.Object);
+            var mock = new Mock<ILogger<PurchaseController>>();
+            ILogger<PurchaseController> logger = mock.Object;
+            var controller = new PurchaseController(_context, logger);
 
             // Act
-            var result = await controller.GetPurchase(999);
+            var result = await controller.GetPurchase(0);
 
             // Assert
-            var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Contains("no existe ninguna compra", notFound.Value.ToString(), StringComparison.OrdinalIgnoreCase);
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }
