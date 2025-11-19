@@ -188,7 +188,7 @@ namespace AppForSEII2526.UT.DevicesController_test
             var emptyContext = CreateEmptyContext();
             var mock = new Mock<ILogger<DevicesController>>();
             ILogger<DevicesController> logger = mock.Object;
-            var controller = new DevicesController(_context, logger);
+            var controller = new DevicesController(emptyContext, logger);
 
             // Act
             var result = await controller.GetDeviceForPurchase(null, null);
