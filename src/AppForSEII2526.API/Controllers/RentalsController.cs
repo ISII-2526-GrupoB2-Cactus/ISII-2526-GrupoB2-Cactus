@@ -11,7 +11,7 @@ namespace AppForSEII2526.API.Controllers
 	public class RentalsController : ControllerBase
 	{
 		private readonly ApplicationDbContext _context;
-		private readonly ILogger<RentalsController> _logger;
+		private readonly ILogger<RentalsController> _logger///;
 
 		public RentalsController(ApplicationDbContext context, ILogger<RentalsController> logger)
 		{
