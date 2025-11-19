@@ -44,7 +44,7 @@ namespace AppForSEII2526.API.Data
             {
                 logger.LogError(ex, "Error al insertar compras.");
             }
-
+            /*
             try
             {
                 SeedReviews(dbContext);
@@ -62,7 +62,7 @@ namespace AppForSEII2526.API.Data
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error al insertar alquileres.");
-            }
+            }*/
         }
 
         // ----------------------------------------------------------
@@ -244,7 +244,7 @@ namespace AppForSEII2526.API.Data
         // ----------------------------------------------------------
         // REVIEWS
         // ----------------------------------------------------------
-
+        /*
         private static void SeedReviews(ApplicationDbContext db)
         {
             if (db.Review.Any()) return;
@@ -404,7 +404,7 @@ namespace AppForSEII2526.API.Data
 
             db.Rental.AddRange(rentals);
             db.SaveChanges();
-        }
+        }*/
 
     }
 }
