@@ -1,189 +1,154 @@
-﻿using AppForSEII2526.API.Controllers;
-using AppForSEII2526.API.DTOs.ReviewDTOs;
+﻿using AppForSEII2526.API.DTOs.ReviewDTOs;
 using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
 
-namespace AppForSEII2526.UT.ReviewsController_test
+namespace AppForSEII2526.API.Controllers
 {
-    public class PostReviews_test : AppForSEII2526SqliteUT
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ReviewsController : ControllerBase
     {
-        private const string _userName = "lucia.romero@alu.uclm.es";
-        private const string _customerNameSurname = "Lucia Romero";
-        private const string _reviewTitle = "Excelente experiencia con los dispositivos";
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<ReviewsController> _logger;
 
-        private const string _device1Name = "iPhone 15 Pro";
-        private const string _device1Brand = "Apple";
-        private const string _device1Model = "iPhone 15";
-        private const string _device2Name = "Galaxy S24 Ultra";
-        private const string _device2Brand = "Samsung";
-        private const string _device2Model = "Galaxy S24";
-
-        public PostReviews_test()
+        public ReviewsController(ApplicationDbContext context, ILogger<ReviewsController> logger)
         {
-            //////////////////////////////////////////////////////
-            //PRUEBAS PARA COMPROBAR EL POST DEL CONTROLLER REVIEWS
-            //////////////////////////////////////////////////////
-            var user = new ApplicationUser
+            _context = context;
+            _logger = logger;
+        }
+        //que no sea nulo el comentario y que no empiece por reseña para
+        [HttpGet]
+        [Route("[action]/{id}")]
+        [ProducesResponseType(typeof(ReviewDetailDTO), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<ActionResult> GetReview(int id)
+        {
+            if (_context.Review == null)
             {
-                Id = "1",
-                UserName = _userName,
-                CustomerUserName = "Lucia",
-                CustomerUserSurname = "Romero",
-                Email = _userName
-            };
+                _logger.LogError("Error: No existen reviews en la tabla");
+                return NotFound();
+            }
 
-            var model1 = new Model { Id = 1, Name = _device1Model };
-            var model2 = new Model { Id = 2, Name = _device2Model };
+            var review = await _context.Review
+                .Where(r => r.ReviewId == id)
+                .Include(r => r.ReviewItems)
+                    .ThenInclude(ri => ri.Device)
+                        .ThenInclude(d => d.Model)
+                .Include(r => r.ApplicationUser)
+                .Select(r => new ReviewDetailDTO(
+                    r.ReviewId,
+                    r.DateOfReview,
+                    r.ApplicationUser.CustomerUserName,
+                    $"{r.ApplicationUser.CustomerUserName} {r.ApplicationUser.CustomerUserSurname}",
+                    r.ReviewItems.Select(ri => new ReviewItemDTO(
+                        ri.DeviceId,
+                        ri.Rating,
+                        ri.Comments ?? ""
+                    )).ToList<ReviewItemDTO>()
+                ))
+                .FirstOrDefaultAsync();
 
-            var devices = new List<Device>(){
-                new Device {
-                    Id = 1,
-                    Brand = _device1Brand,
-                    Color = "Black",
-                    Name = _device1Name,
-                    PriceForPurchase = 999.99,
-                    PriceForRent = 49.99,
-                    Year = 2023,
-                    Quality = Device.QualityType.New,
-                    QuantityForPurchase = 10,
-                    QuantityForRent = 5,
-                    Model = model1
-                },
-                new Device {
-                    Id = 2,
-                    Brand = _device2Brand,
-                    Color = "White",
-                    Name = _device2Name,
-                    PriceForPurchase = 899.99,
-                    PriceForRent = 39.99,
-                    Year = 2024,
-                    Quality = Device.QualityType.New,
-                    QuantityForPurchase = 8,
-                    QuantityForRent = 4,
-                    Model = model2
-                },
-            };
-
-            _context.Users.Add(user);
-            _context.Model.AddRange(new[] { model1, model2 });
-            _context.Device.AddRange(devices);
-            _context.SaveChanges();
-            //Creamos los objetos para guardar en la bd
-        }
-
-        public static IEnumerable<object[]> TestCasesFor_CreateReview()//Usamos el mismo test con distintas pruebas
-        {
-            // CASO 1: Review sin items
-            var reviewNoItems = new ReviewForCreateDTO(_userName, _customerNameSurname,
-                DateTime.Now.AddDays(-1), _reviewTitle, new List<ReviewItemDTO>());
-
-            // CASO 2: Review con fecha futura  
-            var reviewFutureDate = new ReviewForCreateDTO(_userName, _customerNameSurname,
-                DateTime.Now.AddDays(1), _reviewTitle, new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 5, "Excelente dispositivo") // Usamos dispositivo que SÍ existe
-                });
-
-            // CASO 3: Usuario no registrado
-            var reviewUserNotRegistered = new ReviewForCreateDTO("usuario.inexistente@uclm.es", _customerNameSurname,
-                DateTime.Now.AddDays(-1), _reviewTitle, new List<ReviewItemDTO>()
-                {
-                    new ReviewItemDTO(1, 5, "Excelente dispositivo") // Usamos dispositivo que SÍ existe
-                });
-
-            // CASO 4: Rating inválido (bajo) 
-            var reviewInvalidRatingLow = new ReviewForCreateDTO(_userName, _customerNameSurname,
-                DateTime.Now.AddDays(-1), _reviewTitle,
-                new List<ReviewItemDTO>() {
-                    new ReviewItemDTO(1, 0, "Muy mal dispositivo") // Dispositivo 1 SÍ existe
-                });
-
-            // CASO 5: Rating inválido (alto)   
-            var reviewInvalidRatingHigh = new ReviewForCreateDTO(_userName, _customerNameSurname,
-                DateTime.Now.AddDays(-1), _reviewTitle,
-                new List<ReviewItemDTO>() {
-                    new ReviewItemDTO(1, 6, "Dispositivo perfecto") // Dispositivo 1 SÍ existe
-                });
-
-            
-
-            var allTests = new List<object[]>
+            if (review == null)
             {
-                new object[] { reviewNoItems, "Error! Debes incluir al menos un dispositivo para reseñar" },
-                new object[] { reviewFutureDate, "Error! La fecha de reseña no puede ser futura" },
-                new object[] { reviewUserNotRegistered, "Error! El nombre de usuario no está registrado" },
-                new object[] { reviewInvalidRatingLow, "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5" },
-                new object[] { reviewInvalidRatingHigh, "Error! La puntuación para el dispositivo 1 debe estar entre 1 y 5" },
-            };
+                _logger.LogError($"Error: No existe ninguna review con id {id}");
+                return NotFound();
+            }
 
-            return allTests;
+            return Ok(review);
         }
 
-        [Theory]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        [MemberData(nameof(TestCasesFor_CreateReview))] //Va a ejecutar el metodo tantas veces como TestCases..haya
-        public async Task CreateReview_Error_test(ReviewForCreateDTO reviewDTO, string errorExpected)
+        [HttpPost]
+        [Route("[action]")]
+        [ProducesResponseType(typeof(ReviewDetailDTO), (int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Conflict)]
+        public async Task<ActionResult> CreateReview(ReviewForCreateDTO reviewForCreate)
         {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            ILogger<ReviewsController> logger = mock.Object;
-            var controller = new ReviewsController(_context, logger);
+            if (reviewForCreate.ReviewDate > DateTime.Now)
+                ModelState.AddModelError("ReviewDate", "Error! La fecha de reseña no puede ser futura");
 
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
+            if (reviewForCreate.ReviewItems.Count == 0)
+                ModelState.AddModelError("ReviewItems", "Error! Debes incluir al menos un dispositivo para reseñar");
 
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value); //Comprueba que el error que nos ha dado empieza por error
 
-            var errorActual = problemDetails.Errors.First().Value[0];
+            var user = await _context.Users
+                .FirstOrDefaultAsync(au => au.UserName == reviewForCreate.CustomerUserName);
+            if (user == null)
+            {
+                ModelState.AddModelError("CustomerUserName", "Error! El nombre de usuario no está registrado");
+            }
 
-            Assert.StartsWith(errorExpected, errorActual);
-        }
 
-        [Fact]
-        [Trait("LevelTesting", "Unit Testing")]
-        [Trait("Database", "WithoutFixture")]
-        public async Task CreateReview_Success_test()
-        {
-            // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>();
-            ILogger<ReviewsController> logger = mock.Object;
-            var controller = new ReviewsController(_context, logger);
+            if (ModelState.ErrorCount > 0)
+                return BadRequest(new ValidationProblemDetails(ModelState));
 
-            var reviewDate = DateTime.Now.AddDays(-2);
 
-            var reviewDTO = new ReviewForCreateDTO(_userName, _customerNameSurname,
-                reviewDate, _reviewTitle, new List<ReviewItemDTO>()
+            var deviceIds = reviewForCreate.ReviewItems.Select(ri => ri.DeviceId).ToList();
+            var devices = _context.Device
+                .Where(d => deviceIds.Contains(d.Id))
+                .Select(d => new { d.Id, d.Model })
+                .ToList();
+
+
+            Review review = new Review(
+                reviewForCreate.CustomerNameSurname,
+                DateTime.Now, reviewForCreate.AverageRating, reviewForCreate.ReviewTitle, new List<ReviewItem>(), user);
+
+
+            foreach (var item in reviewForCreate.ReviewItems)
+            {
+                var device = devices.FirstOrDefault(d => d.Id == item.DeviceId);
+
+                /*
+                 * CAMBIO EXAMEN SPRINT2
+                  */
+
+                if (device == null)
                 {
-                    new ReviewItemDTO(1, 5, "iPhone espectacular, la cámara es increíble")
-                });
-
-            // El ID esperado será 1 ya que es la primera review que se crea
-            var expectedReviewDetailDTO = new ReviewDetailDTO(1, DateTime.Now,
-                _userName, _customerNameSurname,
-                new List<ReviewItemDTO>()
+                    ModelState.AddModelError("ReviewItems", $"Error! El dispositivo con ID {item.DeviceId} no existe");
+                }
+                if (item.Rating < 1 || item.Rating > 5)
                 {
-                    new ReviewItemDTO(1, 5, "iPhone espectacular, la cámara es increíble")
-                });
+                    ModelState.AddModelError("ReviewItems", $"Error! La puntuación para el dispositivo {item.DeviceId} debe estar entre 1 y 5");
+                }
+                if (item.Comments == null || !(item.Comments.StartsWith("Reseña para")))
+                {
+                    ModelState.AddModelError("ReviewItems", $"Error! El comentario  para el dispositivo {item.DeviceId} debe empezar por Reseña para");
+                }
+                else
+                {
+                    review.ReviewItems.Add(new ReviewItem(device.Id, review, item.Rating));
+                }
+            }
 
-            // Act
-            var result = await controller.CreateReview(reviewDTO);
+            var overallRating = reviewForCreate.ReviewItems.Any() ?
+                (int)Math.Round(reviewForCreate.ReviewItems.Average(ri => ri.Rating)) : 0;
 
-            // Assert
-            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-            var actualReviewDetailDTO = Assert.IsType<ReviewDetailDTO>(createdResult.Value);
+            if (ModelState.ErrorCount > 0)
+                return BadRequest(new ValidationProblemDetails(ModelState));
+            _context.Review.Add(review);
 
-            // Usamos el Equals de los DTOs EXACTAMENTE como hace tu profesora
-            Assert.Equal(expectedReviewDetailDTO, actualReviewDetailDTO);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                ModelState.AddModelError("Review", $"Error! Ha habido un mientras se guardaba tu reseña, intentelo de nuevo");
+            }
+            var reviewDetail = new ReviewDetailDTO(
+                review.ReviewId,
+                review.DateOfReview,
+                reviewForCreate.CustomerUserName,
+                $"{user.CustomerUserName} {user.CustomerUserSurname}",
+                reviewForCreate.ReviewItems
+            );
+
+            return CreatedAtAction("GetReview", new { id = review.ReviewId }, reviewDetail);
         }
     }
 }
