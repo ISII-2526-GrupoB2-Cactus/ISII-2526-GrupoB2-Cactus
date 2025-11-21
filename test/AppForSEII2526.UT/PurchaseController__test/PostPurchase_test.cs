@@ -137,5 +137,41 @@ namespace AppForSEII2526.UT.PurchaseController_test
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Contains("no está disponible", badRequest.Value.ToString());
         }
+
+
+
+
+        [Fact]
+        [Trait("Database", "WithoutFixture")]
+        [Trait("LevelTesting", "Unit Testing")]
+        public async Task CreatePurchase_BadRequest_Contains()
+        {
+            // Arrange
+            var mock = new Mock<ILogger<PurchaseController>>();
+            ILogger<PurchaseController> logger = mock.Object;
+            var controller = new PurchaseController(_context, logger);
+
+            var dto = new PurchaseForCreateDTO
+            {
+                DeliveryAddress = "Calle aceña",
+                CustomerName = "Laura",
+                CustomerSurname = "Gonzalez",
+                PaymentMethod = PaymentMethod.CreditCard,
+                PurchaseItems = new List<PurchaseItemDTO>
+                {
+                    new PurchaseItemDTO(3, "Xiaomi", "Redmi note", "Blue", 300, 1, "Error: las tecnologías de estas marcas ya no están disponibles, siguiendo recomendaciones de las autoridades competentes en materia de seguridad")
+                }
+            };
+
+            // Act
+            var result = await controller.CreatePurchase(dto);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Contains("no está disponible", badRequest.Value.ToString());
+        }
+
+
+
     }
 }
