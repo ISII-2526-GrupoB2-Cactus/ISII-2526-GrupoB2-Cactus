@@ -17,6 +17,10 @@ namespace AppForSEII2526.UT.RentalsController_test
         private const string _userName = "carlos@uclm.es";
         private const string _customerNameSurname = "Carlos García López";
         private const string _deliveryAddress = "Calle Gran Vía 123, Madrid 28013";
+        //MODIFICACION
+        private const string _invalidAddress = "Gran Vía 123, Madrid 28013";
+
+
 
         private const string _device1Name = "iPhone 15 Pro";
         private const string _device1Brand = "Apple";
@@ -81,6 +85,12 @@ namespace AppForSEII2526.UT.RentalsController_test
                     new RentalItemDTO(1, _device1Name, _device1Brand, _device1Model, 49.99, 6)
                 });
 
+            //MODIFICACION
+            var rentalInvalidAddress = new RentalForCreateDTO(_userName, _customerNameSurname,
+                _invalidAddress, PaymentMethodType.CreditCard,
+                DateTime.Today.AddDays(2), DateTime.Today.AddDays(5), rentalItems);
+
+
             var allTests = new List<object[]>
             {
                 new object[] { rentalNoItems, "Error! You must include at least one device to be rented" },
@@ -88,6 +98,9 @@ namespace AppForSEII2526.UT.RentalsController_test
                 new object[] { rentalToBeforeFrom, "Error! Your rental must end later than it starts" },
                 new object[] { rentalApplicationUser, "Error! UserName is not registered" },
                 new object[] { rentalDeviceNotAvailable, "Error! Device Name 'iPhone 15 Pro' is not available for being rented" },
+                //MODIFICACION
+                new object[] { rentalInvalidAddress, "Error en la dirección de envío. Por favor, introduce una dirección válida incluyendo las palabras Calle o Carretera"},
+
             };
 
             return allTests;

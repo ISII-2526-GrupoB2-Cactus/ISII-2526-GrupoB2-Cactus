@@ -82,10 +82,18 @@ namespace AppForSEII2526.API.Controllers
 			if (user == null)
 				ModelState.AddModelError("RentalApplicationUser", "Error! UserName is not registered");
 
-			if (ModelState.ErrorCount > 0)
+
+            //MODIFICACION
+            if (rentalForCreate.DeliveryAddress != null && !(rentalForCreate.DeliveryAddress.Contains("Calle") || rentalForCreate.DeliveryAddress.Contains("Carretera")) )
+                ModelState.AddModelError("DeliveryAddress", "Error en la dirección de envío. Por favor, introduce una dirección válida incluyendo las palabras Calle o Carretera");
+
+
+
+
+            if (ModelState.ErrorCount > 0)
 				return BadRequest(new ValidationProblemDetails(ModelState));
 
-
+			
 
 			var deviceNames = rentalForCreate.RentalItems.Select(ri => ri.Name).ToList<string>();
 
