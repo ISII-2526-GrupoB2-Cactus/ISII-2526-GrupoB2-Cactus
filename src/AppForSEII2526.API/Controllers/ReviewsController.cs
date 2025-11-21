@@ -19,7 +19,7 @@ namespace AppForSEII2526.API.Controllers
             _context = context;
             _logger = logger;
         }
-
+        //que no sea nulo el comentario y que no empiece por reseña para
         [HttpGet]
         [Route("[action]/{id}")]
         [ProducesResponseType(typeof(ReviewDetailDTO), (int)HttpStatusCode.OK)]
@@ -102,6 +102,10 @@ namespace AppForSEII2526.API.Controllers
             {
                 var device = devices.FirstOrDefault(d => d.Id == item.DeviceId);
 
+                /*
+                 * CAMBIO EXAMEN SPRINT2
+                  */
+
                 if (device == null)
                 {
                     ModelState.AddModelError("ReviewItems", $"Error! El dispositivo con ID {item.DeviceId} no existe");
@@ -109,6 +113,10 @@ namespace AppForSEII2526.API.Controllers
                 if (item.Rating < 1 || item.Rating > 5)
                 {
                     ModelState.AddModelError("ReviewItems", $"Error! La puntuación para el dispositivo {item.DeviceId} debe estar entre 1 y 5");
+                }
+                if (item.Comments == null || !(item.Comments.StartsWith("Reseña para")))
+                {
+                    ModelState.AddModelError("ReviewItems", $"Error! El comentario  para el dispositivo {item.DeviceId} debe empezar por Reseña para");
                 }
                 else
                 {
