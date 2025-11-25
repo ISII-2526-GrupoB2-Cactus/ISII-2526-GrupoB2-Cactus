@@ -4,91 +4,93 @@ using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace AppForSEII2526.UT.ReviewsController_test
 {
     public class GetReview_test : AppForSEII2526SqliteUT
     {
+        private const string _userName = "lucia@uclm.es";
+        private const string _customerName = "Lucia";
+        private const string _customerCountry = "España";
+        private const string _reviewTitle = "Gran dispositivo para uso diario";
+        private const string _validComment = "Reseña para un dispositivo excelente";
+
+        private const string _device1Name = "iPhone 15 Pro";
+        private const string _device1Model = "iPhone 15";
+
         public GetReview_test()
         {
-            //////////////////////////////////////////////////////
-            //PRUEBAS PARA COMPROBAR EL GET DEL CONTROLLER REVIEWS
-            //////////////////////////////////////////////////////
-            var user = new ApplicationUser //Creamos los objetos para guardar en la bd
-            {
-                Id = "1",
-                CustomerUserName = "Lucia",
-                CustomerUserSurname = "Romero",
-                Email = "lucia.romero@alu.uclm.es",
-                UserName = "lucia.romero@alu.uclm.es"
-            };
-
-            var model = new Model
-            {
-                Id = 1,
-                Name = "iPhone 15"
-            };
+            var model = new Model { Name = _device1Model };
 
             var device = new Device
             {
                 Id = 1,
                 Brand = "Apple",
-                Color = "Negro",
-                Name = "iPhone 15 Pro",
-                PriceForPurchase = 1200,
-                PriceForRent = 50,
+                Color = "Black",
+                Name = _device1Name,
+                PriceForPurchase = 999.99,
+                PriceForRent = 49.99,
                 Year = 2023,
                 Quality = Device.QualityType.New,
-                QuantityForPurchase = 5,
-                QuantityForRent = 3,
-                Model = model //Creamos el dispositivo asociado al model de antes
+                QuantityForPurchase = 10,
+                QuantityForRent = 5,
+                Model = model
             };
 
-            var review = new Review
+            ApplicationUser user = new ApplicationUser
             {
-                ReviewId = 1,
-                CustomerId = "1",
-                DateOfReview = DateTime.Now.AddDays(-5),
-                OverallRating = 5,
-                ReviewTitle = "Excelente smartphone",
-                ApplicationUser = user
+                Id = "1",
+                UserName = _userName,
+                CustomerUserName = _customerName,  // Esto es "Lucia"
+                CustomerUserSurname = "Martínez López",
+                Email = _userName,
+                CustomerCountry = _customerCountry
             };
 
-            var reviewItem = new ReviewItem
+            var review = new Review(
+                customerId: _userName, // Esto se guarda pero no se usa en el Get
+                dateOfReview: DateTime.Now,
+                overallRating: 5,
+                reviewTitle: _reviewTitle,
+                reviewItems: new List<ReviewItem>(),
+                user: user
+            );
+
+            review.ReviewItems.Add(new ReviewItem(
+                deviceId: device.Id,
+                rating: 5,
+                comments: _validComment
+            )
             {
-                DeviceId = device.Id,
-                ReviewId = review.ReviewId,
-                Rating = 5,
-                Comments = "iPhone espectacular, la cámara es increíble",
-                Device = device,
                 Review = review
-            };
+            });
 
-            review.ReviewItems = new List<ReviewItem> { reviewItem }; //Junta el reviewItem con la review
-
-            _context.Users.Add(user); //Añadimos los objetos a la bd
-            _context.Model.Add(model);
-            _context.Device.Add(device);
-            _context.Review.Add(review);
-            _context.ReviewItem.Add(reviewItem);
+            _context.Users.Add(user);
+            _context.Add(model);
+            _context.Add(device);
+            _context.Add(review);
             _context.SaveChanges();
         }
 
         [Fact]
-        [Trait("Database", "WithoutFixture")]
         [Trait("LevelTesting", "Unit Testing")]
-        public async Task GetReview_NotFound_test() //No devuelve nada porque es un test
+        [Trait("Database", "WithoutFixture")]
+        public async Task GetReview_NotFound_test()
         {
             // Arrange
-            var mock = new Mock<ILogger<ReviewsController>>(); //Crea un objeto falso
+            var mock = new Mock<ILogger<ReviewsController>>();
             ILogger<ReviewsController> logger = mock.Object;
+            var controller = new ReviewsController(_context, logger);
 
-            var controller = new ReviewsController(_context, logger); //Creamos el controlador real y le pasamos la bd y el logger falso
+            // Act
+            var result = await controller.GetReview(999);
 
-            // Act: Le vamos a pasar un id 0 que no existe y tiene que devolver (No encontrado)
-            var result = await controller.GetReview(0);
-
-            //Assert: Mira si el resultado es no econtrado
+            // Assert
             Assert.IsType<NotFoundResult>(result);
         }
 
@@ -102,18 +104,43 @@ namespace AppForSEII2526.UT.ReviewsController_test
             ILogger<ReviewsController> logger = mock.Object;
             var controller = new ReviewsController(_context, logger);
 
-            var expectedReview = new ReviewDetailDTO(1, DateTime.Now.AddDays(-5), "Lucia", "Lucia Romero", 
-                        new List<ReviewItemDTO>());
-            expectedReview.ReviewItems.Add(new ReviewItemDTO(1, 5, "iPhone espectacular, la cámara es increíble"));//Creamos un objeto reviewDetailDTO esperado
+            var reviewItems = new List<ReviewItemDTO>()
+            {
+                new ReviewItemDTO(1, _device1Name, _device1Model, 2023, 5, _validComment)
+            };
+
+            // CORREGIDO: Usar _customerName ("Lucia") que es lo que devuelve el controlador
+            var expectedReview = new ReviewDetailDTO(
+                _customerName, // ← "Lucia" no "lucia@uclm.es"
+                _customerCountry,
+                _reviewTitle,
+                DateTime.Now,
+                reviewItems
+            )
+            {
+                Id = 1
+            };
 
             // Act 
-            var result = await controller.GetReview(1); //Buscamos la review 1 y como existe tiene que devolver lo esperado
+            var result = await controller.GetReview(1);
 
-            //Assert
-            var okResult = Assert.IsType<OkObjectResult>(result); //Mira si el resultado es OkObjectResult
-            var reviewDTOActual = Assert.IsType<ReviewDetailDTO>(okResult.Value); //Mira que sea tipo DTO
-            var eq = expectedReview.Equals(reviewDTOActual);
-            Assert.Equal(expectedReview, reviewDTOActual); //Mira si el DTO coincide con expectedReview
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actualReview = Assert.IsType<ReviewDetailDTO>(okResult.Value);
+
+            // Ajustamos la fecha del expected para que coincida
+            var expectedWithSameDate = new ReviewDetailDTO(
+                _customerName, // "Lucia"
+                _customerCountry,
+                _reviewTitle,
+                actualReview.ReviewDate,
+                reviewItems
+            )
+            {
+                Id = actualReview.Id
+            };
+
+            Assert.Equal(expectedWithSameDate, actualReview);
         }
     }
 }

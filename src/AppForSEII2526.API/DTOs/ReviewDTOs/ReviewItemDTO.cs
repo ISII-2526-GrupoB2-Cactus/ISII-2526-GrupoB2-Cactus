@@ -25,15 +25,19 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
         public int Rating { get; set; }
         public string? Comments { get; set; }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
-            return obj is ReviewItemDTO dTO &&
-                   Id == dTO.Id &&
-                   Name == dTO.Name &&
-                   Model == dTO.Model &&
-                   Year == dTO.Year &&
-                   Rating == dTO.Rating &&
-                   Comments == dTO.Comments;
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            var other = (ReviewItemDTO)obj;
+
+            return Id == other.Id &&
+                   Name == other.Name &&
+                   Model == other.Model &&
+                   Year == other.Year &&
+                   Rating == other.Rating &&
+                   Comments == other.Comments;
         }
 
         public override int GetHashCode()
