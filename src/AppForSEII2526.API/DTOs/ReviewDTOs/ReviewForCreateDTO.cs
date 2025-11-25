@@ -1,46 +1,49 @@
 namespace AppForSEII2526.API.DTOs.ReviewDTOs
 {
+    using Microsoft.CodeAnalysis;
+    using NuGet.DependencyResolver;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
+    using System.IO.Pipelines;
     using System.Linq;
     using System.Text.Json.Serialization;
+    using static System.Runtime.InteropServices.JavaScript.JSType;
 
     public class ReviewForCreateDTO
     {
-        public ReviewForCreateDTO(string customerUserName, string customerNameSurname, DateTime reviewDate, string reviewTitle, IList<ReviewItemDTO> reviewItems)
+        // solicita al cliente que introduzca el título de la reseña y el país desde donde se hace de forma obligatoria y de forma opcional el nombre del cliente.
+        // Para cada dispositivo se pide un comentario y una puntuación de obligatoria.
+        public ReviewForCreateDTO(string reviewTitle, string customerCountry,string? customerUserName,  IList<ReviewItemDTO> reviewItems)
         {
-            CustomerUserName = customerUserName ?? throw new ArgumentNullException(nameof(customerUserName));
-            CustomerNameSurname = customerNameSurname ?? throw new ArgumentNullException(nameof(customerNameSurname));
-            ReviewDate = reviewDate;
             ReviewTitle = reviewTitle ?? throw new ArgumentNullException(nameof(reviewTitle));
+            CustomerCountry = customerCountry ?? throw new ArgumentNullException(nameof(customerCountry));
+
+            CustomerUserName = customerUserName;
+            
             ReviewItems = reviewItems ?? throw new ArgumentNullException(nameof(reviewItems));
         }
 
         public ReviewForCreateDTO()
         {
             ReviewItems = new List<ReviewItemDTO>();
-            ReviewTitle = string.Empty; //Dto nuevo con nuevas modificaciones
         }
-
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Nombre de usuario")]
-        public string CustomerUserName { get; set; } = string.Empty;
-
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Por favor, ingrese su nombre y apellido")]
-        [StringLength(50, MinimumLength = 5, ErrorMessage = "El nombre y apellido deben tener al menos 5 caracteres")]
-        [Display(Name = "Nombre completo")]
-        public string CustomerNameSurname { get; set; } = string.Empty;
-
-        [Required]
-        [Display(Name = "Fecha de la reseña")]
-        public DateTime ReviewDate { get; set; }
 
         [Required]
         [StringLength(50, MinimumLength = 10, ErrorMessage = "El título debe tener entre 10 y 50 caracteres")]
         [Display(Name = "Título de la reseña")]
         public string ReviewTitle { get; set; } = string.Empty;
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Por favor, ingrese pais")]
+        [StringLength(30, MinimumLength = 3, ErrorMessage = "El pais tiene que tener entre 3 y 30 caracteres")]
+        [Display(Name = "Pais")]
+        public string CustomerCountry { get; set; } = string.Empty;
+
+        
+        [EmailAddress]
+        [Display(Name = "Nombre de usuario")]
+        public string? CustomerUserName { get; set; } = string.Empty;
+
 
         [Required]
         [Display(Name = "Artículos reseñados")]
@@ -63,18 +66,17 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
 
         public override bool Equals(object? obj)
         {
-            return obj is ReviewForCreateDTO dto &&
-                   CompareDate(ReviewDate, dto.ReviewDate) &&
-                   CustomerUserName == dto.CustomerUserName &&
-                   CustomerNameSurname == dto.CustomerNameSurname &&
-                   ReviewTitle == dto.ReviewTitle &&
-                   ReviewItems.SequenceEqual(dto.ReviewItems) &&
-                   AverageRating == dto.AverageRating;
+            return obj is ReviewForCreateDTO dTO &&
+                   ReviewTitle == dTO.ReviewTitle &&
+                   CustomerCountry == dTO.CustomerCountry &&
+                   CustomerUserName == dTO.CustomerUserName &&
+                   EqualityComparer<IList<ReviewItemDTO>>.Default.Equals(ReviewItems, dTO.ReviewItems) &&
+                   AverageRating == dTO.AverageRating;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(CustomerUserName, CustomerNameSurname, ReviewDate, ReviewTitle, ReviewItems, AverageRating);
+            return HashCode.Combine(ReviewTitle, CustomerCountry, CustomerUserName, ReviewItems, AverageRating);
         }
     }
 }

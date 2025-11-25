@@ -3,6 +3,7 @@ using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Net;
 
 namespace AppForSEII2526.API.Controllers
@@ -28,7 +29,7 @@ namespace AppForSEII2526.API.Controllers
         {
             if (_context.Review == null)
             {
-                _logger.LogError("Error: No existen reviews en la tabla");
+                _logger.LogError("Error: No existen Reseñas en la tabla");
                 return NotFound();
             }
 
@@ -39,16 +40,22 @@ namespace AppForSEII2526.API.Controllers
                         .ThenInclude(d => d.Model)
                 .Include(r => r.ApplicationUser)
                 .Select(r => new ReviewDetailDTO(
-                    r.ReviewId,
-                    r.DateOfReview,
                     r.ApplicationUser.CustomerUserName,
-                    $"{r.ApplicationUser.CustomerUserName} {r.ApplicationUser.CustomerUserSurname}",
-                    r.ReviewItems.Select(ri => new ReviewItemDTO(
-                        ri.DeviceId,
-                        ri.Rating,
-                        ri.Comments ?? ""
-                    )).ToList<ReviewItemDTO>()
-                ))
+                    r.ApplicationUser.CustomerCountry,
+                    r.ReviewTitle,
+                    r.DateOfReview,
+                    r.ReviewItems
+                        .Select(ri => new ReviewItemDTO(
+                            ri.DeviceId,
+                            ri.Device.Name,
+                            ri.Device.Model.Name,
+                            ri.Device.Year,
+                            ri.Rating,
+                            ri.Comments))
+                        .ToList<ReviewItemDTO>())
+                {
+                    Id = r.ReviewId
+                })
                 .FirstOrDefaultAsync();
 
             if (review == null)
@@ -67,88 +74,135 @@ namespace AppForSEII2526.API.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Conflict)]
         public async Task<ActionResult> CreateReview(ReviewForCreateDTO reviewForCreate)
         {
-            if (reviewForCreate.ReviewDate > DateTime.Now)
-                ModelState.AddModelError("ReviewDate", "Error! La fecha de reseña no puede ser futura");
+            // Validaciones como en el ejemplo
+            if (string.IsNullOrWhiteSpace(reviewForCreate.ReviewTitle))
+                ModelState.AddModelError("ReviewTitle", "Error! El titulo no puede estar vacio");
+
+            if (string.IsNullOrWhiteSpace(reviewForCreate.CustomerCountry))
+                ModelState.AddModelError("CustomerCountry", "Error! El pais no puede estar vacio");
 
             if (reviewForCreate.ReviewItems.Count == 0)
-                ModelState.AddModelError("ReviewItems", "Error! Debes incluir al menos un dispositivo para reseñar");
+                ModelState.AddModelError("ReviewItems", "Error! Debes incluir un dispositivo para reseñar");
 
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(au => au.UserName == reviewForCreate.CustomerUserName);
+            var user = _context.Users.FirstOrDefault(au => au.UserName == reviewForCreate.CustomerUserName);
             if (user == null)
-            {
-                ModelState.AddModelError("CustomerUserName", "Error! El nombre de usuario no está registrado");
-            }
-
+                ModelState.AddModelError("ReviewApplicationUser", "Error! Usuario no registrado");
 
             if (ModelState.ErrorCount > 0)
                 return BadRequest(new ValidationProblemDetails(ModelState));
 
+            // Obtener dispositivos 
+            var deviceIds = reviewForCreate.ReviewItems.Select(ri => ri.Id).ToList();
 
-            var deviceIds = reviewForCreate.ReviewItems.Select(ri => ri.DeviceId).ToList();
             var devices = _context.Device
+                .Include(d => d.Model)
                 .Where(d => deviceIds.Contains(d.Id))
-                .Select(d => new { d.Id, d.Model })
+                
+                .Select(d => new {
+                    d.Id,
+                    d.Name,
+                    ModelName = d.Model.Name,
+                    d.Year
+                })
                 .ToList();
 
-
+            
             Review review = new Review(
-                reviewForCreate.CustomerNameSurname,
-                DateTime.Now, reviewForCreate.AverageRating, reviewForCreate.ReviewTitle, new List<ReviewItem>(), user);
+                customerId: reviewForCreate.CustomerUserName,
+                dateOfReview: DateTime.Now,
+                overallRating: reviewForCreate.AverageRating,
+                reviewTitle: reviewForCreate.ReviewTitle,
+                reviewItems: new List<ReviewItem>(), // Lista vacía inicial
+                user: user
+            );
 
-
+            
             foreach (var item in reviewForCreate.ReviewItems)
             {
-                var device = devices.FirstOrDefault(d => d.Id == item.DeviceId);
-
-                /*
-                 * CAMBIO EXAMEN SPRINT2
-                  */
+                var device = devices.FirstOrDefault(d => d.Id == item.Id);
 
                 if (device == null)
                 {
-                    ModelState.AddModelError("ReviewItems", $"Error! El dispositivo con ID {item.DeviceId} no existe");
+                    ModelState.AddModelError("ReviewItems", $"Error! El dispositivo con id {item.Id} no existe");
                 }
-                if (item.Rating < 1 || item.Rating > 5)
+                else if (item.Rating < 1 || item.Rating > 5)
                 {
-                    ModelState.AddModelError("ReviewItems", $"Error! La puntuación para el dispositivo {item.DeviceId} debe estar entre 1 y 5");
+                    ModelState.AddModelError("ReviewItems", $"Error! La puntuacion del dispositivo '{device.Name}' debe estar entre 1 y 5");
                 }
-                if (item.Comments == null || !(item.Comments.StartsWith("Reseña para")))
+                /*
+                 *EJERCICIO EXAMEN (MODIFICACION SPRINT2) 
+                 */
+                else if (item.Comments ==null  || !item.Comments.StartsWith("Reseña para"))
                 {
-                    ModelState.AddModelError("ReviewItems", $"Error! El comentario  para el dispositivo {item.DeviceId} debe empezar por Reseña para");
+                    ModelState.AddModelError("ReviewItems", $"Error! El comentario del dispositivo '{device.Name}' debe empezar por 'Reseña para'");
                 }
                 else
                 {
-                    review.ReviewItems.Add(new ReviewItem(device.Id, review, item.Rating));
+                    
+                    var reviewItem = new ReviewItem(
+                        deviceId: device.Id,
+                        rating: item.Rating,
+                        comments: item.Comments
+                    )
+                    {
+                        Review = review 
+                    };
+
+                    review.ReviewItems.Add(reviewItem);
                 }
             }
 
-            var overallRating = reviewForCreate.ReviewItems.Any() ?
-                (int)Math.Round(reviewForCreate.ReviewItems.Average(ri => ri.Rating)) : 0;
-
+            
             if (ModelState.ErrorCount > 0)
+            {
                 return BadRequest(new ValidationProblemDetails(ModelState));
+            }
+
             _context.Review.Add(review);
 
             try
             {
+                // Guardar tanto Review como sus ReviewItems 
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                ModelState.AddModelError("Review", $"Error! Ha habido un mientras se guardaba tu reseña, intentelo de nuevo");
-            }
-            var reviewDetail = new ReviewDetailDTO(
-                review.ReviewId,
-                review.DateOfReview,
-                reviewForCreate.CustomerUserName,
-                $"{user.CustomerUserName} {user.CustomerUserSurname}",
-                reviewForCreate.ReviewItems
-            );
+                _logger.LogError(ex, "Error al guardar la reseña");
+                
+                var innerException = ex.InnerException != null ? ex.InnerException.Message : "No inner exception";
+                _logger.LogError($"Inner exception: {innerException}");
 
-            return CreatedAtAction("GetReview", new { id = review.ReviewId }, reviewDetail);
+                ModelState.AddModelError("Review", $"Error! Ha ocurrido un error,prueba mas tarde");
+                return Conflict($"Error: {ex.Message} - Inner: {innerException}");
+            }
+
+            
+            var savedReview = await _context.Review
+                .Include(r => r.ReviewItems)
+                .ThenInclude(ri => ri.Device)
+                .ThenInclude(d => d.Model)
+                .FirstOrDefaultAsync(r => r.ReviewId == review.ReviewId);
+
+            
+            var reviewDetail = new ReviewDetailDTO(
+                customerUserName: savedReview.CustomerId,
+                customerCountry: reviewForCreate.CustomerCountry,
+                reviewTitle: savedReview.ReviewTitle,
+                reviewDate: savedReview.DateOfReview,
+                reviewItems: savedReview.ReviewItems.Select(ri => new ReviewItemDTO(
+                    id: ri.DeviceId,
+                    name: ri.Device.Name,
+                    model: ri.Device.Model.Name,
+                    year: ri.Device.Year,
+                    rating: ri.Rating,
+                    comments: ri.Comments
+                )).ToList()
+            )
+            {
+                Id = savedReview.ReviewId
+            };
+
+            return CreatedAtAction("GetReview", new { id = savedReview.ReviewId }, reviewDetail);
         }
     }
 }

@@ -1,32 +1,33 @@
-﻿
-namespace AppForSEII2526.API.Models
+﻿namespace AppForSEII2526.API.Models
 {
     [PrimaryKey(nameof(DeviceId), nameof(ReviewId))]
     public class ReviewItem
     {
-
-
         public ReviewItem()
         {
-
         }
-        public ReviewItem(int deviceId, Review review, int rating)
+        public ReviewItem(int deviceId, int rating, string? comments = null)
         {
             DeviceId = deviceId;
-            Review = review;
             Rating = rating;
+            Comments = comments;
         }
-        public ReviewItem(string? comments, int rating, int reviewId, int deviceId)
+
+        public ReviewItem(string? comments, int deviceId, int rating, int reviewId)
         {
             Comments = comments;
+            DeviceId = deviceId;
             Rating = rating;
             ReviewId = reviewId;
-            DeviceId = deviceId;
         }
+        
 
-
-        [StringLength(50, ErrorMessage = "Los comentarios no pueden tener mas de 50 caracteres")] 
+        [StringLength(50, ErrorMessage = "Los comentarios no pueden tener mas de 50 caracteres")]
         public string? Comments { get; set; }
+
+        [Required]
+        public int DeviceId { get; set; }
+
 
         [Required]
         [Range(1, 5, ErrorMessage = "La puntuación debe estar entre 1 y 5.")]
@@ -34,14 +35,25 @@ namespace AppForSEII2526.API.Models
 
         [Required]
         public int ReviewId { get; set; }
-        public Review Review { get; set; } //Atributo para relacion con la clase Review
 
-        [Required]
-        public int DeviceId { get; set; }
-        public Device Device { get; set; } //Atributo para relacion
-        
-        
+        public Review Review { get; set; }
 
+        public Device Device { get; set; }
+
+        // Implementación del método Equals
+        public override bool Equals(object? obj)
+        {
+            if (obj is ReviewItem other)
+            {
+                return DeviceId == other.DeviceId &&
+                       ReviewId == other.ReviewId;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(DeviceId, ReviewId);
+        }
     }
-
 }
