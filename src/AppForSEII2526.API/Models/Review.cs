@@ -50,6 +50,18 @@ namespace AppForSEII2526.API.Models
 
   
         public ApplicationUser ApplicationUser { get; set; } //Atributo con claser relacion ApplicationUser
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Review review &&
+                   ReviewId == review.ReviewId &&
+                   CustomerId == review.CustomerId &&
+                   DateOfReview == review.DateOfReview &&
+                   OverallRating == review.OverallRating &&
+                   ReviewTitle == review.ReviewTitle &&
+                   EqualityComparer<IList<ReviewItem>>.Default.Equals(ReviewItems, review.ReviewItems) &&
+                   EqualityComparer<ApplicationUser>.Default.Equals(ApplicationUser, review.ApplicationUser);
+        }
     }
 
 }

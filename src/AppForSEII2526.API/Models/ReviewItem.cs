@@ -13,11 +13,10 @@
             Comments = comments;
         }
 
-        public ReviewItem(string? comments, int deviceId, int id, int rating, int reviewId)
+        public ReviewItem(string? comments, int deviceId, int rating, int reviewId)
         {
             Comments = comments;
             DeviceId = deviceId;
-            Id = id;
             Rating = rating;
             ReviewId = reviewId;
         }
@@ -29,7 +28,6 @@
         [Required]
         public int DeviceId { get; set; }
 
-        public int Id { get; set; } // Ya no es clave primaria, puede ser opcional
 
         [Required]
         [Range(1, 5, ErrorMessage = "La puntuación debe estar entre 1 y 5.")]
