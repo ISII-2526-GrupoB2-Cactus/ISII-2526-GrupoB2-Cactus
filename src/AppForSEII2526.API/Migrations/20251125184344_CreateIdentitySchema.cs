@@ -331,8 +331,8 @@ namespace AppForSEII2526.API.Migrations
                 name: "ReviewItem",
                 columns: table => new
                 {
-                    ReviewId = table.Column<int>(type: "int", nullable: false),
                     DeviceId = table.Column<int>(type: "int", nullable: false),
+                    ReviewId = table.Column<int>(type: "int", nullable: false),
                     Comments = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Rating = table.Column<int>(type: "int", nullable: false)
                 },

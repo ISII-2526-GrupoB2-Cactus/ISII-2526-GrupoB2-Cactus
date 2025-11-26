@@ -64,19 +64,23 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
             return (date1.Subtract(date2) < new TimeSpan(0, 1, 0));
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
-            return obj is ReviewForCreateDTO dTO &&
-                   ReviewTitle == dTO.ReviewTitle &&
-                   CustomerCountry == dTO.CustomerCountry &&
-                   CustomerUserName == dTO.CustomerUserName &&
-                   EqualityComparer<IList<ReviewItemDTO>>.Default.Equals(ReviewItems, dTO.ReviewItems) &&
-                   AverageRating == dTO.AverageRating;
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            var other = (ReviewForCreateDTO)obj;
+
+            return ReviewTitle == other.ReviewTitle &&
+                   CustomerCountry == other.CustomerCountry &&
+                   CustomerUserName == other.CustomerUserName &&
+                   ReviewItems.Count == other.ReviewItems.Count &&
+                   ReviewItems.All(item => other.ReviewItems.Contains(item));
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ReviewTitle, CustomerCountry, CustomerUserName, ReviewItems, AverageRating);
+            return HashCode.Combine(ReviewTitle, CustomerCountry, CustomerUserName);
         }
     }
 }

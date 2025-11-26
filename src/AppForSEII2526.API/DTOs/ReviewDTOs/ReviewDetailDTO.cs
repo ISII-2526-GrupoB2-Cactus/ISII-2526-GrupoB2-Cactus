@@ -37,21 +37,25 @@
             }
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
-            return obj is ReviewDetailDTO dTO &&
-                   Id == dTO.Id &&
-                   ReviewDate == dTO.ReviewDate &&
-                   CustomerUserName == dTO.CustomerUserName &&
-                   CustomerCountry == dTO.CustomerCountry &&
-                   ReviewTitle == dTO.ReviewTitle &&
-                   EqualityComparer<IList<ReviewItemDTO>>.Default.Equals(ReviewItems, dTO.ReviewItems) &&
-                   AverageRating == dTO.AverageRating;
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            var other = (ReviewDetailDTO)obj;
+
+            return Id == other.Id &&
+                   CustomerUserName == other.CustomerUserName &&
+                   CustomerCountry == other.CustomerCountry &&
+                   ReviewTitle == other.ReviewTitle &&
+                   ReviewDate.Date == other.ReviewDate.Date &&
+                   ReviewItems.Count == other.ReviewItems.Count &&
+                   ReviewItems.All(item => other.ReviewItems.Contains(item));
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Id, ReviewDate, CustomerUserName, CustomerCountry, ReviewTitle, ReviewItems, AverageRating);
+            return HashCode.Combine(Id, CustomerUserName, CustomerCountry, ReviewTitle, ReviewDate);
         }
     }
 }

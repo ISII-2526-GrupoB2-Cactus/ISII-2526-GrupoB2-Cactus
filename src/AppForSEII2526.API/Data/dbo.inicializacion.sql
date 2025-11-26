@@ -3,7 +3,7 @@
 -- ======================================
 
 -- PRIMERO VERIFICAR SI HAY DATOS Y ELIMINAR EN ORDEN CORRECTO
-IF EXISTS (SELECT 1 FROM Reviewitem) DELETE FROM Reviewitem;
+IF EXISTS (SELECT 1 FROM ReviewItem) DELETE FROM ReviewItem;
 IF EXISTS (SELECT 1 FROM Review) DELETE FROM Review;
 IF EXISTS (SELECT 1 FROM RentDevice) DELETE FROM RentDevice;
 IF EXISTS (SELECT 1 FROM Rental) DELETE FROM Rental;
@@ -78,20 +78,20 @@ INSERT INTO RentDevice (RentId, DeviceId, Price, Quantity, RentalId) VALUES
 (3, @Device2, 89.99, 1, 3);
 
 -- ======================================
---          RESEÑAR DISPOSITIVOS
+--          RESEÑAR DISPOSITIVOS - CORREGIDO
 -- ======================================
 
--- INSERTAR REVIEWS
-INSERT INTO Review (CustomerId, DateOfReview, OverallRating, ReviewTitle)
+-- INSERTAR REVIEWS (ApplicationUserId es NULL según tu tabla)
+INSERT INTO Review (CustomerId, DateOfReview, OverallRating, ReviewTitle, ApplicationUserId)
 VALUES 
-('customer1', GETDATE(), 5, 'Excelente experiencia de compra'),
-('customer2', DATEADD(DAY, -1, GETDATE()), 4, 'Muy buena atencion al cliente'),
-('customer3', DATEADD(DAY, -2, GETDATE()), 5, 'Servicio rapido y eficiente'),
-('customer1', DATEADD(DAY, -3, GETDATE()), 3, 'Producto bueno con entrega regular'),
-('customer2', DATEADD(DAY, -4, GETDATE()), 5, 'Calidad premium garantizada');
+('customer1', GETDATE(), 5, 'Excelente experiencia de compra', NULL),
+('customer2', DATEADD(DAY, -1, GETDATE()), 4, 'Muy buena atencion al cliente', NULL),
+('customer3', DATEADD(DAY, -2, GETDATE()), 5, 'Servicio rapido y eficiente', NULL),
+('customer1', DATEADD(DAY, -3, GETDATE()), 3, 'Producto bueno con entrega regular', NULL),
+('customer2', DATEADD(DAY, -4, GETDATE()), 5, 'Calidad premium garantizada', NULL);
 
--- INSERTAR REVIEWITEMS (USAR LOS IDs REALES DE DISPOSITIVOS)
-INSERT INTO Reviewitem (ReviewId, DeviceId, Comments, Rating) VALUES
+-- INSERTAR REVIEWITEMS (USAR LOS IDs REALES DE DISPOSITIVOS, Comments puede ser NULL)
+INSERT INTO ReviewItem (ReviewId, DeviceId, Comments, Rating) VALUES
 (1, @Device1, 'iPhone 15: camara increible y bateria duradera.', 5),
 (1, @Device3, 'PlayStation 5 funciona perfectamente para gaming.', 5),
 (2, @Device5, 'MacBook Air rapido pero precio algo elevado.', 4),
@@ -110,7 +110,7 @@ UNION ALL SELECT 'Device', COUNT(*) FROM Device
 UNION ALL SELECT 'Rental', COUNT(*) FROM Rental
 UNION ALL SELECT 'RentDevice', COUNT(*) FROM RentDevice
 UNION ALL SELECT 'Review', COUNT(*) FROM Review
-UNION ALL SELECT 'Reviewitem', COUNT(*) FROM Reviewitem;
+UNION ALL SELECT 'ReviewItem', COUNT(*) FROM ReviewItem;
 
 SELECT '=== ALQUILERES ===' as Info;
 SELECT Id, NameCustomer, SurnameCustomer, TotalPrice FROM Rental;
@@ -119,7 +119,7 @@ SELECT '=== DISPOSITIVOS ALQUILADOS ===' as Info;
 SELECT RentId, DeviceId, Price, Quantity, RentalId FROM RentDevice;
 
 SELECT '=== RESEÑAS ===' as Info;
-SELECT ReviewId, CustomerId, OverallRating, ReviewTitle FROM Review;
+SELECT ReviewId, CustomerId, OverallRating, ReviewTitle, ApplicationUserId FROM Review;
 
 SELECT '=== ITEMS DE RESEÑAS ===' as Info;
-SELECT ReviewId, DeviceId, Comments, Rating FROM Reviewitem;
+SELECT ReviewId, DeviceId, Comments, Rating FROM ReviewItem;
