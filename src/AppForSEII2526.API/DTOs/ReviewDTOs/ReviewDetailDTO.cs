@@ -2,16 +2,13 @@
 {
     public class ReviewDetailDTO
     {
-        public ReviewDetailDTO(int id,
-                          DateTime reviewDate,
-                          string customerUserName,
-                          string customerNameSurname,
-                          IList<ReviewItemDTO> reviewItems)
+        // El sistema muestra la reseña realizada, indicando los datos del cliente (nombre y país),el título de la reseña y la fecha en que se realizó
+        public ReviewDetailDTO(string customerUserName, string customerCountry, string reviewTitle, DateTime reviewDate, IList<ReviewItemDTO> reviewItems)
         {
-            Id = id;
-            ReviewDate = reviewDate;
             CustomerUserName = customerUserName;
-            CustomerNameSurname = customerNameSurname;
+            CustomerCountry = customerCountry;
+            ReviewTitle = reviewTitle;
+            ReviewDate = reviewDate;
             ReviewItems = reviewItems;
         }
 
@@ -24,13 +21,14 @@
 
         public DateTime ReviewDate { get; set; }
 
-        public string CustomerUserName { get; set; } = string.Empty;
+        public string CustomerUserName { get; set; } = string.Empty; 
 
-        public string CustomerNameSurname { get; set; } = string.Empty;
+        public string CustomerCountry { get; set; } = string.Empty;
+
+        public string ReviewTitle { get; set; } = string.Empty;
 
         public IList<ReviewItemDTO> ReviewItems { get; set; }
 
-        // Propiedad calculada para la puntuación promedio
         public double AverageRating
         {
             get
@@ -39,25 +37,25 @@
             }
         }
 
-        private bool CompareDate(DateTime date1, DateTime date2)
+        public override bool Equals(object obj)
         {
-            return (date1.Subtract(date2) < new TimeSpan(0, 1, 0));
-        }
+            if (obj == null || GetType() != obj.GetType())
+                return false;
 
-        public override bool Equals(object? obj)
-        {
-            return obj is ReviewDetailDTO dto &&
-                   CompareDate(ReviewDate, dto.ReviewDate) &&
-                   Id == dto.Id &&
-                   CustomerUserName == dto.CustomerUserName &&
-                   CustomerNameSurname == dto.CustomerNameSurname &&
-                   ReviewItems.SequenceEqual(dto.ReviewItems) &&
-                   AverageRating == dto.AverageRating;
+            var other = (ReviewDetailDTO)obj;
+
+            return Id == other.Id &&
+                   CustomerUserName == other.CustomerUserName &&
+                   CustomerCountry == other.CustomerCountry &&
+                   ReviewTitle == other.ReviewTitle &&
+                   ReviewDate.Date == other.ReviewDate.Date &&
+                   ReviewItems.Count == other.ReviewItems.Count &&
+                   ReviewItems.All(item => other.ReviewItems.Contains(item));
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Id, ReviewDate, CustomerUserName, CustomerNameSurname, ReviewItems, AverageRating);
+            return HashCode.Combine(Id, CustomerUserName, CustomerCountry, ReviewTitle, ReviewDate);
         }
     }
 }

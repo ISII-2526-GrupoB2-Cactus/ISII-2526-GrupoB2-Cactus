@@ -1,6 +1,7 @@
 ﻿using AppForSEII2526.API.DTOs.PurchaseDTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace AppForSEII2526.API.Controllers
 {
@@ -58,7 +59,7 @@ namespace AppForSEII2526.API.Controllers
             if (purchase == null)
             {
                 _logger.LogError($"Error: No existe ninguna compra con id {id}.");
-                return NotFound($"No existe ninguna compra con id {id}.");
+                return NotFound();
             }
 
             _logger.LogInformation($"Compra encontrada con ID {id}.");
@@ -89,11 +90,13 @@ namespace AppForSEII2526.API.Controllers
 
                 foreach (var item in purchaseForCreate.PurchaseItems)
                 {
+                    
                     if (item.Quantity > 0)
                     {
                         var device = await _context.Device
                             .Include(d => d.Model)
                             .FirstOrDefaultAsync(x => x.Id == item.DeviceID);
+                            
 
                         if (device != null)
                         {
@@ -113,6 +116,15 @@ namespace AppForSEII2526.API.Controllers
                         {
                             return BadRequest($"El dispositivo con ID {item.DeviceID} no está disponible.");
                         }
+
+                        if (device.Brand.Contains("Xiaomi") || device.Brand.Contains("Huawei") || device.Model.Name.Contains("Huawei") || device.Model.Name.Contains("Xiaomi"))
+                        {
+                            return BadRequest("Error: las tecnologías de estas marcas ya no están disponibles, siguiendo recomendaciones de las autoridades competentes en materia de seguridad");
+                        }
+
+                        
+
+
                     }
                     else
                     {

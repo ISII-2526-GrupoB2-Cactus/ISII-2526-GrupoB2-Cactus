@@ -1,37 +1,48 @@
-﻿namespace AppForSEII2526.API.DTOs.ReviewDTOs
+
+namespace AppForSEII2526.API.DTOs.ReviewDTOs
 {
     public class ReviewItemDTO
     {
-        public ReviewItemDTO(int deviceId, int rating, string comments = "")
+        //así como de cada dispositivo su nombre, modelo, año, puntuación y el comentario.
+        public ReviewItemDTO(int id, string name, string model,  int year, int rating, string? comments)
         {
-            DeviceId = deviceId;
+            Id = id;
+            Name = name;
+            Model = model;
+            Year = year;
             Rating = rating;
             Comments = comments;
         }
         public ReviewItemDTO()
         {
         }
+       
 
-        public int DeviceId { get; set; }
-
-        [Required]
-        [Range(1, 5, ErrorMessage = "La puntuación debe estar entre 1 y 5.")]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Model { get; set; }
+        public int Year { get; set; }
         public int Rating { get; set; }
-
-        [StringLength(100, ErrorMessage = "Los comentarios no pueden tener más de 100 caracteres")]
         public string? Comments { get; set; }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
-            return obj is ReviewItemDTO dto &&
-                   DeviceId == dto.DeviceId &&
-                   Rating == dto.Rating &&
-                   Comments == dto.Comments;
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            var other = (ReviewItemDTO)obj;
+
+            return Id == other.Id &&
+                   Name == other.Name &&
+                   Model == other.Model &&
+                   Year == other.Year &&
+                   Rating == other.Rating &&
+                   Comments == other.Comments;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(DeviceId, Rating, Comments);
+            return HashCode.Combine(Id, Name, Model, Year, Rating, Comments);
         }
     }
 }
