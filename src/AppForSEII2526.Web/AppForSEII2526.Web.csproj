@@ -11,6 +11,9 @@
     <OpenApiReference Include="OpenAPIs\swagger.json" Namespace="AppForSEII2526.Web.API" ClassName="AppForSEII2526APIClient">
       <SourceUri>https://localhost:7067/swagger/v1/swagger.json</SourceUri>
     </OpenApiReference>
+    <OpenApiReference Include="OpenAPIs\swagger1.json" ClassName="CactusAPIClient">
+      <SourceUri>https://cactus-bydtd5a0ggedate4.italynorth-01.azurewebsites.net/swagger/v1/swagger.json</SourceUri>
+    </OpenApiReference>
   </ItemGroup>
 
   <ItemGroup>
