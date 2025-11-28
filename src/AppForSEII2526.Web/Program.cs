@@ -42,6 +42,8 @@ string? URI2API = builder.Configuration.GetValue(typeof(string), "Cactus_API") a
 //We creare the service for accesing the API from where .WEB project
 builder.Services.AddScoped<CactusAPIClient>(sp => new CactusAPIClient(URI2API, new HttpClient()));
 
+builder.Services.AddScoped<PurchaseStateContainer>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
