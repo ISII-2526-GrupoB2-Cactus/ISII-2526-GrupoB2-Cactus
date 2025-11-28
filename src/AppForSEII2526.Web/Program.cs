@@ -45,6 +45,9 @@ builder.Services.AddScoped<CactusAPIClient>(sp => new CactusAPIClient(URI2API, n
 //adding an In-memory state container service
 builder.Services.AddScoped<RentalStateContainer>();
 
+builder.Services.AddScoped<ReviewStateContainer>();
+
+builder.Services.AddScoped<PurchaseStateContainer>();
 
 var app = builder.Build();
 
