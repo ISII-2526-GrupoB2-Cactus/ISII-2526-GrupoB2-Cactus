@@ -1,0 +1,187 @@
+﻿@page "/purchase/ListDevicesForPurchase"
+
+@using AppForSEII2526.Web.API
+@using AppForSEII2526.API.DTOs.DeviceDTOs
+@using Microsoft.AspNetCore.Authorization
+
+@inject ILogger<ListDevicesForPurchase> logger
+@inject AppForSEII2526APIClient apiservice
+@inject PurchaseStateContainer purchaseState
+@inject NavigationManager navigation
+
+@attribute [Authorize]
+
+<h3>Seleccionar dispositivos para comprar</h3>
+
+<div class="container-fluid">
+
+    <!-- Resumen -->
+    <div class="row">
+        <div class="d-flex justify-content-between">
+            <div><b>Dispositivos seleccionados:</b> @purchase.PurchaseItems.Count</div>
+            <button class="btn btn-primary" id="GoToPurchase" @onclick="GoToPurchase" disabled="@ContinueDisabled">
+                Continuar compra
+            </button>
+        </div>
+    </div>
+
+    <!-- Carrito -->
+    <div class="row">
+        <button class="btn btn-outline-primary" id="showCart" @onclick="ToggleCart">
+            Carrito: @purchase.TotalPrice €
+        </button>
+    </div>
+
+    <div class="row" hidden="@hiddenCart">
+        @foreach (var item in purchase.PurchaseItems)
+        {
+            <PurchaseItem Item="item" OnRemoved="@(() => RemoveItem(item))"></PurchaseItem>
+        }
+    </div>
+
+    <!-- Filtros -->
+    <div class="row">
+        <h5>Filtrar dispositivos</h5>
+
+        <div class="input-group">
+
+            <span class="input-group-text">Nombre</span>
+            <input class="form-control" @bind="filterName" />
+
+            <span class="input-group-text">Color</span>
+            <input class="form-control" @bind="filterColor" />
+
+            <span class="input-group-text">Precio máximo</span>
+            <InputNumber class="form-control" @bind-Value="filterMaxPrice" />
+
+            <button class="btn btn-outline-primary" @onclick="SearchDevices">
+                Buscar
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Tabla de dispositivos -->
+    <div class="d-flex justify-content-between mt-3">
+        <div class="container-fluid">
+            @if (Devices.Count == 0)
+            {
+                <p><em>No hay dispositivos disponibles.</em></p>
+            }
+            else
+            {
+                <div class="mh-100 table-responsive">
+                    <table class="table table-condensed table-hover">
+                        <thead>
+                            <tr>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Color</th>
+                                <th>Precio</th>
+                                <th>Añadir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Devices)
+                            {
+                                <tr id="device_@d.Id">
+                                    <td>@d.Brand</td>
+                                    <td>@d.Model</td>
+                                    <td>@d.Color</td>
+                                    <td>@d.PriceForPurchase</td>
+                                    <td>
+                                        <button class="btn btn-outline-secondary" @onclick="@(()=>AddDevice(d))">
+                                            Añadir
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+
+<!-- MODAL DE ERROR -->
+@if (DialogOKIsOpen)
+{
+    <Dialog Caption="Error"
+            Message="@DialogOKMessage"
+            OnClose="@OnDialogOKClose"
+            Type=Dialog.Category.Okay>
+    </Dialog>
+}
+
+
+@code {
+
+    private PurchaseForCreateDTO purchase => purchaseState.Purchase;
+
+    private bool hiddenCart = true;
+    private bool DialogOKIsOpen = false;
+    private string DialogOKMessage = "";
+
+    private List<DeviceForPurchaseDTO> Devices { get; set; } = new();
+
+    private string? filterName;
+    private string? filterColor;
+    private float? filterMaxPrice;
+
+    private bool ContinueDisabled => purchase.PurchaseItems.Count == 0;
+
+    private void ToggleCart() => hiddenCart = !hiddenCart;
+
+
+    private void AddDevice(DeviceForPurchaseDTO device)
+    {
+        purchaseState.AddDeviceToPurchase(device);
+    }
+
+    private void RemoveItem(PurchaseItemDTO item)
+    {
+        purchaseState.RemovePurchaseItem(item);
+        if (purchase.PurchaseItems.Count == 0)
+            hiddenCart = true;
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchDevices();
+    }
+
+
+    private async Task SearchDevices()
+    {
+        try
+        {
+            Devices = (await apiservice.GetDeviceForPurchaseAsync(filterName, filterColor, filterMaxPrice)).ToList();
+        }
+        catch (AppForSEII2526.Web.API.ApiException ex)
+        {
+            Devices = new();
+            DialogOKMessage = "Error conectando con el servicio de dispositivos.";
+            DialogOKIsOpen = true;
+            logger.LogError(ex, "Error llamando a GetDeviceForPurchase");
+        }
+
+        StateHasChanged();
+    }
+
+
+    private void GoToPurchase()
+    {
+        navigation.NavigateTo("/purchase/createpurchase");
+    }
+
+
+    private Task OnDialogOKClose()
+    {
+        DialogOKIsOpen = false;
+        return Task.CompletedTask;
+    }
+}
