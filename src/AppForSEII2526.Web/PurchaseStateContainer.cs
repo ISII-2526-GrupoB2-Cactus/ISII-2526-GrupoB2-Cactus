@@ -1,6 +1,4 @@
-﻿using AppForSEII2526.API.DTOs.DeviceDTOs;
-using AppForSEII2526.API.DTOs.PurchaseDTOs;
-using AppForSEII2526.API.Models;
+﻿using AppForSEII2526.API.Models;
 using AppForSEII2526.Web.API;
 using System.Drawing;
 using System.Drawing.Drawing2D;
