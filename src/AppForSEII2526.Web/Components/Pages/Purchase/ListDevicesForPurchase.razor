@@ -1,15 +1,14 @@
 ﻿@page "/purchase/ListDevicesForPurchase"
 
 @using AppForSEII2526.Web.API
-@using AppForSEII2526.API.DTOs.DeviceDTOs
 @using Microsoft.AspNetCore.Authorization
 
-@inject ILogger<ListDevicesForPurchase> logger
-@inject AppForSEII2526APIClient apiservice
+@inject CactusAPIClient apiservice
 @inject PurchaseStateContainer purchaseState
 @inject NavigationManager navigation
+@inject ILogger<ListDevicesForPurchase> logger
 
-@attribute [Authorize]
+@* @ @attribute [Authorize]  *@
 
 <h3>Seleccionar dispositivos para comprar</h3>
 
@@ -138,7 +137,7 @@
 
     private void AddDevice(DeviceForPurchaseDTO device)
     {
-        purchaseState.AddDeviceToPurchase(device);
+        purchaseState.AddDeviceForPurchase(device);
     }
 
     private void RemoveItem(PurchaseItemDTO item)
@@ -159,7 +158,7 @@
     {
         try
         {
-            Devices = (await apiservice.GetDeviceForPurchaseAsync(filterName, filterColor, filterMaxPrice)).ToList();
+            Devices = (await apiservice.GetDeviceForPurchaseAsync(filterName, filterColor)).ToList();
         }
         catch (AppForSEII2526.Web.API.ApiException ex)
         {

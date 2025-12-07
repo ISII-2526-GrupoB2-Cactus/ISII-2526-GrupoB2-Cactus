@@ -1,7 +1,119 @@
 ﻿@page "/purchase/DetailPurchase"
 
-<h3>DetailRental</h3>
+@page "/purchase/detail"
+@using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
+@inject CactusAPIClient apiservice
+
+@attribute [Authorize]
+
+<h3>Detalle de la compra</h3>
+
+@if (purchase == null)
+{
+    <p>@error</p>
+}
+else
+{
+    <table class="table table-borderless table-sm">
+        <tr>
+            <th>Nombre</th>
+            <td id="CustomerName">@purchase.CustomerName</td>
+        </tr>
+        <tr>
+            <th>Apellidos</th>
+            <td id="CustomerSurname">@purchase.CustomerSurname</td>
+        </tr>
+        <tr>
+            <th>Dirección de envío</th>
+            <td id="DeliveryAddress">@purchase.DeliveryAddress</td>
+        </tr>
+        <tr>
+            <th>Método de pago</th>
+            <td id="PaymentMethod">@purchase.PaymentMethod</td>
+        </tr>
+        <tr>
+            <th>Fecha de compra</th>
+            <td id="PurchaseDate">@purchase.PurchaseDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+        </tr>
+    </table>
+
+    <h4>Productos comprados</h4>
+
+    <table class="table" id="PurchasedDevices">
+        <thead>
+            <tr>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Color</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in purchase.PurchaseItems)
+            {
+                <tr id="PurchaseItem_@item.DeviceID">
+                    <td>@item.Brand</td>
+                    <td>@item.Model</td>
+                    <td>@item.Color</td>
+                    <td>@item.PriceForPurchase €</td>
+                    <td>@item.Quantity</td>
+                    <td>@(item.PriceForPurchase* item.Quantity) €</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="5" class="text-end">Precio total:</th>
+                <td id="TotalPrice">@purchase.TotalPrice €</td>
+            </tr>
+        </tfoot>
+    </table>
+}
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int id { get; set; }
 
+    private PurchaseDetailDTO? purchase;
+    private string error = "";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Validamos usuario autenticado
+        string userName = "";
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                userName = user.Identity.Name;
+            }
+        }
+
+        // Llamada a la API
+        try
+        {
+            purchase = await apiservice.GetPurchaseAsync(id);
+        }
+        catch (ApiException)
+        {
+            purchase = null;
+        }
+
+        // Comprobación de autorización
+        if ((purchase == null))
+        {
+            error = $"Error: No existe la compra con id = {id}";
+        }
+    }
 }
+

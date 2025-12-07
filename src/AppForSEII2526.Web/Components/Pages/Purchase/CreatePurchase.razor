@@ -1,9 +1,126 @@
-﻿
+﻿@page "/purchase/CreatePurchase"
 
+@using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
 
-<h3>ListDevicesForPurchase</h3>
+@inject CactusAPIClient apiservice
+@inject PurchaseStateContainer purchaseState
+@inject NavigationManager Navigation
+
+@attribute [Authorize]
+
+<h3>Crear compra</h3>
+
+<EditForm Model="purchase" OnValidSubmit="OpenDialog">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row g-2">
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="purchase.CustomerName" class="form-control" />
+                <label>Nombre</label>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="purchase.CustomerSurname" class="form-control" />
+                <label>Apellidos</label>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="purchase.DeliveryAddress" class="form-control" />
+                <label>Dirección de envío</label>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputSelect class="form-select" @bind-Value="purchase.PaymentMethod">
+                    <option value="CreditCard">Tarjeta</option>
+                    <option value="PayPal">PayPal</option>
+                </InputSelect>
+                <label>Método de pago</label>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Finalizar compra</button>
+</EditForm>
+
+@if (DialogIsOpen)
+{
+    <Dialog Caption="Confirmar compra"
+            Message="¿Desea confirmar la compra?"
+            OnClose="@OnDialogClose"
+            Type="SaveNot">
+    </Dialog>
+}
+
+@if (DialogOKIsOpen)
+{
+    <Dialog Caption="Error"
+            Message="@DialogOKMessage"
+            OnClose="@OnDialogOKClose"
+            Type="Okay">
+    </Dialog>
+}
 
 @code {
 
-}
+    private PurchaseForCreateDTO purchase => purchaseState.Purchase;
 
+    private bool DialogIsOpen = false;
+    private bool DialogOKIsOpen = false;
+    private string DialogOKMessage = "";
+
+    private void OpenDialog()
+    {
+        DialogIsOpen = true;
+    }
+
+    private async Task OnDialogClose(bool accepted)
+    {
+        DialogIsOpen = false;
+
+        if (!accepted)
+            return;
+
+        try
+        {
+            var dto = new PurchaseForCreateDTO
+            {
+                CustomerName = purchase.CustomerName,
+                CustomerSurname = purchase.CustomerSurname,
+                DeliveryAddress = purchase.DeliveryAddress,
+                PaymentMethod = purchase.PaymentMethod,
+                PurchaseItems = purchase.PurchaseItems
+            };
+
+            var created = await apiservice.CreatePurchaseAsync(dto);
+
+            purchaseState.PurchaseProcessed();
+
+            Navigation.NavigateTo($"/purchase/detail?id={created.Id}");
+        }
+        catch (AppForSEII2526.Web.API.ApiException<Microsoft.AspNetCore.Mvc.ValidationProblemDetails> badrequest)
+        {
+            DialogOKMessage = string.Join(" ", badrequest.Result.Errors.SelectMany(e => e.Value));
+            DialogOKIsOpen = true;
+        }
+        catch (AppForSEII2526.Web.API.ApiException)
+        {
+            DialogOKMessage = "Error al procesar la compra.";
+            DialogOKIsOpen = true;
+        }
+    }
+
+    private Task OnDialogOKClose()
+    {
+        DialogOKIsOpen = false;
+        return Task.CompletedTask;
+    }
+}
