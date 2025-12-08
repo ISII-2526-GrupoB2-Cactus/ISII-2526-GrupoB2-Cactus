@@ -27,7 +27,7 @@ namespace AppForSEII2526.Web
         private void NotifyStateChanged() => OnChange?.Invoke();
 
 
-        public void AddMovieToRental(DeviceForPurchaseDTO device)
+        public void AddDeviceForPurchase(DeviceForPurchaseDTO device)
         {
             //before adding a movie we checked whether it has been already added
             if (!Purchase.PurchaseItems.Any(pi => pi.DeviceID == device.Id))
