@@ -7,9 +7,18 @@ namespace AppForSEII2526.Web
     {
         public ReviewForCreateDTO Review { get; private set; } = new ReviewForCreateDTO()
         {
-            ReviewItems = new List<ReviewItemDTO>()
+            ReviewItems = new List<ReviewItemDTO>() //Esto es como el carrito donde se guardan
         };
 
+        public double AverageRating
+        {
+            get
+            {
+                return Review.ReviewItems.Any()
+                    ? Review.ReviewItems.Average(ri => ri.Rating)
+                    : 0;
+            }
+        }
         public event Action? OnChange;
 
         private void NotifyStateChanged() => OnChange?.Invoke();
@@ -27,26 +36,21 @@ namespace AppForSEII2526.Web
                     Comments = null
                 }
             );
-            ComputeAverageRating();
-        }
+            
+        } //Agrega la reseña al carrito
 
-        private void ComputeAverageRating()
-        {
-            Review.AverageRating = Review.ReviewItems.Any() ?
-                (int)Review.ReviewItems.Average(ri => ri.Rating) : 0;
-        }
+        
 
         public void RemoveReviewItem(ReviewItemDTO item)
         {
             Review.ReviewItems.Remove(item);
-            ComputeAverageRating();
-        }
+           
+        } //Elimina la reseña del carrito
 
         public void ClearReview()
         {
             Review.ReviewItems.Clear();
-            Review.AverageRating = 0;
-        }
+        }//Limpia el carrito
 
         public void ReviewProcessed()
         {
@@ -54,7 +58,7 @@ namespace AppForSEII2526.Web
             {
                 ReviewItems = new List<ReviewItemDTO>()
             };
-        }
+        } //Cuando acaba vuelve a dejar el carrito vacio
     }
     }
 
