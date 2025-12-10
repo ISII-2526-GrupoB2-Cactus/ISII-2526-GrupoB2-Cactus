@@ -90,7 +90,7 @@
             @foreach (ReviewItemDTO item in review.ReviewItems)
             {
                 <div class="row">
-                    <button type="button" class="btn btn-light" id="removeDevice_@item.Id" @onclick="@(() => RemoveReviewItem(item))">x @item.Name - @item.Rating★</button>
+                    <button type="button" class="btn btn-light" id="removeDevice_@item.Id" @onclick="@(() => RemoveReviewItem(item))">x @item.Name</button>
                 </div>
             }
             <div class="row">
@@ -99,7 +99,6 @@
         </div>
     </div>
 </div>
-
 
 @code {
     private string selectedBrand = "All";
@@ -133,7 +132,7 @@
             devices = await apiclient.GetDevicesForReviewAsync(yearToFilter, brandToFilter);
             errors = "";
         }
-        catch (Exception ex)
+        catch (ApiException ex)
         {
             logger.LogError($"{DateTime.Now} Error: {ex}");
             errors = "Error al conectar con el sistema";
@@ -149,11 +148,11 @@
             brandsNames = allDevices.Select(d => d.Brand).Distinct().OrderBy(b => b).ToList();
             availableYears = allDevices.Select(d => d.Year).Distinct().OrderByDescending(y => y).ToList();
         }
-        catch (Exception ex)
+        catch (ApiException ex)
         {
-            if (brandsNames == null) brandsNames = new List<string>();
-            if (availableYears == null) availableYears = new List<int>();
-            logger.LogError($"Error! Hubo un error al conectar con el servicio: {ex}");
+            if (brandsNames == null) brandsNames = new List<string>() { "Todas" };
+            if (availableYears == null) availableYears = new List<int>() { 0 };
+            logger.LogError($"{DateTime.Now} Error! Hubo un error al conectar con el servicio GetDevicesForReviewAsync");
         }
 
         SearchDevices();
@@ -161,6 +160,6 @@
 
     private void CreateReview()
     {
-        navigation.NavigateTo("/review/createreview");
+        navigation.NavigateTo("/reviews/createreview");
     }
 }
