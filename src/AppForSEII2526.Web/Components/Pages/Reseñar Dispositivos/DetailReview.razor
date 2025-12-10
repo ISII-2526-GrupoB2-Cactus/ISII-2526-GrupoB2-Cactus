@@ -2,99 +2,83 @@
 @using Microsoft.AspNetCore.Authorization
 @using AppForSEII2526.Web.API
 @inject CactusAPIClient apiclient
-@inject ILogger<DetailReview> logger
 
 <h3>DetailReview</h3>
 
-<div class="container-fluid">
-    @if (review == null)
-    {
-        <div class="alert alert-danger" role="alert">
-            <p>@error</p>
-        </div>
-    }
-    else
-    {
-        <div class="row">
-            <div class="col-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Información de la reseña</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-borderless table-sm">
-                            <tr>
-                                <th class="col-3">Cliente:</th>
-                                <td id="CustomerName">@review.CustomerUserName</td>
-                            </tr>
-                            <tr>
-                                <th>País:</th>
-                                <td id="CustomerCountry">@review.CustomerCountry</td>
-                            </tr>
-                            <tr>
-                                <th>Título de la reseña:</th>
-                                <td id="ReviewTitle">@review.ReviewTitle</td>
-                            </tr>
-                            <tr>
-                                <th>Fecha de la reseña:</th>
-                                <td id="ReviewDate">@review.ReviewDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                            </tr>
-                            <tr>
-                                <th>Puntuación promedio:</th>
-                                <td id="AverageRating">
-                                    @for (int i = 0; i < (int)review.AverageRating; i++)
-                                    {
-                                        <span class="text-warning">★</span>
-                                    }
-                                    (@review.AverageRating.ToString("F1") / 5)
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+@attribute [Authorize(Roles = "User")]
 
-                <h4 class="mt-4">Dispositivos reseñados</h4>
+@if (review == null)
+{
+    <p>@error</p>
+}
+else
+{
+    <table class="table table-borderless table-sm">
+        <tr>
+            <th>Nombre del Cliente</th>
+            <td id="CustomerName">@review.CustomerUserName</td>
+        </tr>
+        <tr>
+            <th>País</th>
+            <td id="CustomerCountry">@review.CustomerCountry</td>
+        </tr>
+        <tr>
+            <th>Título de la reseña</th>
+            <td id="ReviewTitle">@review.ReviewTitle</td>
+        </tr>
+        <tr>
+            <th>Fecha de la reseña</th>
+            <td id="ReviewDate">@review.ReviewDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+        </tr>
+        <tr>
+            <th>Puntuación promedio</th>
+            <td id="AverageRating">
+                @for (int i = 0; i < (int)review.AverageRating; i++)
+                {
+                    <span class="text-warning">★</span>
+                }
+                (@review.AverageRating.ToString("F1") / 5)
+            </td>
+        </tr>
+    </table>
 
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover" id="ReviewedDevices">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col">Nombre</th>
-                                <th scope="col">Modelo</th>
-                                <th scope="col">Año</th>
-                                <th scope="col">Puntuación</th>
-                                <th scope="col">Comentario</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in review.ReviewItems)
-                            {
-                                <tr id="ReviewItem_@item.Id">
-                                    <td>@item.Name</td>
-                                    <td>@item.Model</td>
-                                    <td>@item.Year</td>
-                                    <td>
-                                        @for (int i = 0; i < item.Rating; i++)
-                                        {
-                                            <span class="text-warning">★</span>
-                                        }
-                                        (@item.Rating / 5)
-                                    </td>
-                                    <td>@item.Comments</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    }
-</div>
+    <h4>Dispositivos reseñados</h4>
+
+    <table class="table" id="ReviewedDevices">
+        <thead>
+            <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Modelo</th>
+                <th scope="col">Año</th>
+                <th scope="col">Puntuación</th>
+                <th scope="col">Comentario</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in review.ReviewItems)
+            {
+                <tr id="ReviewItem_@item.Id">
+                    <td>@item.Name</td>
+                    <td>@item.Model</td>
+                    <td>@item.Year</td>
+                    <td>
+                        @for (int i = 0; i < item.Rating; i++)
+                        {
+                            <span class="text-warning">★</span>
+                        }
+                        (@item.Rating / 5)
+                    </td>
+                    <td>@item.Comments</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public int ID { get; set; }
+    public int ReviewID { get; set; }
 
     private ReviewDetailDTO? review;
     private string error = "";
@@ -123,37 +107,16 @@
 
         try
         {
-            if (ID > 0)
-            {
-                review = await apiclient.GetReviewAsync(ID);
-
-                // Verificar que el usuario es el dueño de la reseña
-                if (review != null && review.CustomerUserName != userName)
-                {
-                    error = $"Error! No está autorizado para ver esta reseña.";
-                    review = null;
-                }
-                else if (review == null)
-                {
-                    error = $"Error! No existe una reseña con id={ID}";
-                }
-            }
-            else
-            {
-                error = "Error! ID de reseña no válido.";
-            }
+            review = await apiclient.GetReviewAsync(ReviewID);
         }
         catch (ApiException ex)
         {
-            logger.LogError($"{DateTime.Now} Error al obtener la reseña: {ex}");
-            error = $"Error al conectar con el sistema. Por favor, inténtelo más tarde.";
             review = null;
         }
-        catch (Exception ex)
+
+        if ((review == null) || (review.CustomerUserName != userName))
         {
-            logger.LogError($"{DateTime.Now} Error inesperado: {ex}");
-            error = $"Error inesperado. Por favor, inténtelo más tarde.";
-            review = null;
+            error = $"Error! No está autorizado para ver esta reseña o no existe una reseña con id={ReviewID}";
         }
     }
 }
