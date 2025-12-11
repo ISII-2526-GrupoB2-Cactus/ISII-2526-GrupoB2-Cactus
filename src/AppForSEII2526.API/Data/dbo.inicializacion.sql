@@ -123,3 +123,4 @@ SELECT ReviewId, CustomerId, OverallRating, ReviewTitle, ApplicationUserId FROM 
 
 SELECT '=== ITEMS DE RESEÑAS ===' as Info;
 SELECT ReviewId, DeviceId, Comments, Rating FROM ReviewItem;
+
