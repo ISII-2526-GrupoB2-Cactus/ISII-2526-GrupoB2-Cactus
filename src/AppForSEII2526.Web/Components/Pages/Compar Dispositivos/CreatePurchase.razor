@@ -1,85 +1,149 @@
-﻿@page "/purchase/CreatePurchase"
+﻿@page "/purchase/createpurchase"
 
 @using AppForSEII2526.Web.API
 @using Microsoft.AspNetCore.Authorization
 
-@inject CactusAPIClient apiservice
+@inject AppForSEII2526APIClient apiclient
+@inject ILogger<CreatePurchase> logger
 @inject PurchaseStateContainer purchaseState
-@inject NavigationManager Navigation
+@inject NavigationManager navigation
 
 @attribute [Authorize]
 
-<h3>Crear compra</h3>
+<h3>Create Purchase</h3>
 
 <EditForm Model="purchase" OnValidSubmit="OpenDialog">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <div class="row">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="row alert alert-danger" />
+    </div>
 
-    <div class="row g-2">
+    <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
+        <p id="ErrorsShown">Errors: @messageError</p>
+    </div>
+
+    <!-- CUSTOMER DATA -->
+    <div class="row g-3">
+
         <div class="col-md">
             <div class="form-floating mb-3">
                 <InputText @bind-Value="purchase.CustomerName" class="form-control" />
-                <label>Nombre</label>
+                <label>Customer Name</label>
             </div>
         </div>
 
         <div class="col-md">
             <div class="form-floating mb-3">
                 <InputText @bind-Value="purchase.CustomerSurname" class="form-control" />
-                <label>Apellidos</label>
+                <label>Customer Surname</label>
             </div>
         </div>
 
         <div class="col-md">
             <div class="form-floating mb-3">
                 <InputText @bind-Value="purchase.DeliveryAddress" class="form-control" />
-                <label>Dirección de envío</label>
+                <label>Delivery Address</label>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PAYMENT + SUBMIT -->
+    <div class="row g-2">
+
+        <div class="col-md">
+            <div class="form-floating">
+                <InputSelect class="form-select" @bind-Value="purchase.PaymentMethod">
+                    <option value="@PaymentMethod.CreditCard">Credit Card</option>
+                    <option value="@PaymentMethod.PayPal">PayPal</option>
+                </InputSelect>
+                <label>Payment Method</label>
             </div>
         </div>
 
         <div class="col-md">
-            <div class="form-floating mb-3">
-                <InputSelect class="form-select" @bind-Value="purchase.PaymentMethod">
-                    <option value="CreditCard">Tarjeta</option>
-                    <option value="PayPal">PayPal</option>
-                </InputSelect>
-                <label>Método de pago</label>
+            <div class="form-floating">
+                <button class="btn btn-primary"
+                        type="submit"
+                        disabled="@purchaseButtonDisabled">
+                    Purchase devices
+                </button>
             </div>
         </div>
+
     </div>
 
-    <button class="btn btn-primary" type="submit">Finalizar compra</button>
+    <!-- PURCHASE SUMMARY -->
+    <h4>Purchase detail</h4>
+
+    <p>
+        <b>Total price:</b> @purchaseState.TotalPrice €
+        <button class="btn btn-outline-primary"
+                type="button"
+                @onclick="ModifyPurchaseItems">
+            Modify devices
+        </button>
+    </p>
+
+    <!-- PURCHASE ITEMS -->
+    <div class="mh-100 table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Color</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in purchase.PurchaseItems)
+                {
+                    <tr>
+                        <td>@item.Brand</td>
+                        <td>@item.Model</td>
+                        <td>@item.Color</td>
+                        <td>@item.PriceForPurchase €</td>
+                        <td>@item.Quantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
 </EditForm>
 
+<!-- CONFIRMATION DIALOG -->
 @if (DialogIsOpen)
 {
-    <Dialog Caption="Confirmar compra"
-            Message="¿Desea confirmar la compra?"
+    <Dialog Caption="Confirm Purchase"
+            Message="Do you want to proceed with the purchase?"
             OnClose="@OnDialogClose"
-            Type="SaveNot">
-    </Dialog>
-}
-
-@if (DialogOKIsOpen)
-{
-    <Dialog Caption="Error"
-            Message="@DialogOKMessage"
-            OnClose="@OnDialogOKClose"
-            Type="Okay">
+            Type="Dialog.Category.SaveNot">
     </Dialog>
 }
 
 @code {
 
-    private PurchaseForCreateDTO purchase => purchaseState.Purchase;
+    private string messageError = "";
+    private bool hideErrors => messageError.Length == 0;
+
+    private bool purchaseButtonDisabled =>
+        purchase.PurchaseItems == null || purchase.PurchaseItems.Count == 0;
 
     private bool DialogIsOpen = false;
-    private bool DialogOKIsOpen = false;
-    private string DialogOKMessage = "";
+
+    private PurchaseForCreateDTO purchase => purchaseState.Purchase;
 
     private void OpenDialog()
     {
         DialogIsOpen = true;
+    }
+
+    private void ModifyPurchaseItems()
+    {
+        navigation.NavigateTo("/purchase/selectdevicesforpurchase");
     }
 
     private async Task OnDialogClose(bool accepted)
@@ -89,38 +153,24 @@
         if (!accepted)
             return;
 
+        if (purchase.PurchaseItems.Count == 0)
+            return;
+
         try
         {
-            var dto = new PurchaseForCreateDTO
-            {
-                CustomerName = purchase.CustomerName,
-                CustomerSurname = purchase.CustomerSurname,
-                DeliveryAddress = purchase.DeliveryAddress,
-                PaymentMethod = purchase.PaymentMethod,
-                PurchaseItems = purchase.PurchaseItems
-            };
-
-            var created = await apiservice.CreatePurchaseAsync(dto);
-
+            var created = await apiclient.CreatePurchaseAsync(purchase);
             purchaseState.PurchaseProcessed();
-
-            Navigation.NavigateTo($"/purchase/detail?id={created.Id}");
+            navigation.NavigateTo($"/purchase/detailpurchase?id={created.Id}");
         }
-        catch (AppForSEII2526.Web.API.ApiException<Microsoft.AspNetCore.Mvc.ValidationProblemDetails> badrequest)
+        catch (ApiException<ValidationProblemDetails> validationException)
         {
-            DialogOKMessage = string.Join(" ", badrequest.Result.Errors.SelectMany(e => e.Value));
-            DialogOKIsOpen = true;
+            messageError = string.Join(" ",
+                validationException.Result.Errors.SelectMany(e => e.Value));
         }
-        catch (AppForSEII2526.Web.API.ApiException)
+        catch (ApiException ex)
         {
-            DialogOKMessage = "Error al procesar la compra.";
-            DialogOKIsOpen = true;
+            logger.LogError($"{DateTime.Now} Error: {ex}");
+            messageError = "Error while processing your purchase. Please try again later.";
         }
-    }
-
-    private Task OnDialogOKClose()
-    {
-        DialogOKIsOpen = false;
-        return Task.CompletedTask;
     }
 }
