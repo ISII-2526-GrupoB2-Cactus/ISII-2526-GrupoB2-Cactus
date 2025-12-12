@@ -9,10 +9,11 @@
 @inject NavigationManager navigation
 
 @attribute [Authorize]
-
+ 
 <h3>Create Purchase</h3>
-
-<EditForm Model="purchase" OnValidSubmit="OpenDialog">
+<!--
+<EditForm Model="purchase" OnValidSubmit="OpenDialog"> -->
+<!--
     <div class="row">
         <DataAnnotationsValidator />
         <ValidationSummary class="row alert alert-danger" />
@@ -21,10 +22,12 @@
     <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
         <p id="ErrorsShown">Errors: @messageError</p>
     </div>
+    -->
+    <!-- CUSTOMER DATA --> -->
 
-    <!-- CUSTOMER DATA -->
+    <!--
     <div class="row g-3">
-
+        
         <div class="col-md">
             <div class="form-floating mb-3">
                 <InputText @bind-Value="purchase.CustomerName" class="form-control" />
@@ -47,8 +50,10 @@
         </div>
 
     </div>
+    -->
 
-    <!-- PAYMENT + SUBMIT -->
+    <!-- 
+   
     <div class="row g-2">
 
         <div class="col-md">
@@ -72,8 +77,10 @@
         </div>
 
     </div>
-
+    --> 
     <!-- PURCHASE SUMMARY -->
+
+    <!--
     <h4>Purchase detail</h4>
 
     <p>
@@ -84,8 +91,11 @@
             Modify devices
         </button>
     </p>
+    -->
 
+    
     <!-- PURCHASE ITEMS -->
+<!--
     <div class="mh-100 table-responsive">
         <table class="table table-hover">
             <thead>
@@ -113,15 +123,17 @@
     </div>
 
 </EditForm>
+-->
+
 
 <!-- CONFIRMATION DIALOG -->
-@if (DialogIsOpen)
+<!--@if (DialogIsOpen)
 {
-    <Dialog Caption="Confirm Purchase"
-            Message="Do you want to proceed with the purchase?"
-            OnClose="@OnDialogClose"
-            Type="Dialog.Category.SaveNot">
-    </Dialog>
+        <Dialog Caption="Confirm Purchase"
+                Message="Do you want to proceed with the purchase?"
+                OnClose="@OnDialogClose"
+                Type="Dialog.Category.SaveNot">
+        </Dialog>
 }
 
 @code {
@@ -174,3 +186,8 @@
         }
     }
 }
+ -->
+
+
+
+

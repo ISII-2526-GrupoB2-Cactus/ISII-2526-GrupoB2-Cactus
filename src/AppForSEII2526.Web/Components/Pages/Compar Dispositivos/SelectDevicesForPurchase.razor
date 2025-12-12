@@ -13,20 +13,20 @@
 @attribute [Authorize]
 
 <h3>Select Devices For Purchase</h3>
-
+<!--
 <div class="container-fluid">
 
-    <!-- ERROR PANEL -->
+    
     <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
         <p id="ErrorsShown">Errors: @errors</p>
     </div>
 
     <div class="row">
 
-        <!-- LEFT SIDE -->
+        
         <div class="col-8">
 
-            <!-- FILTERS -->
+            
             <div class="row">
 
                 <div class="col">
@@ -59,7 +59,7 @@
 
             </div>
 
-            <!-- TABLE -->
+          
             <div class="row">
                 @if (devices == null)
                 {
@@ -104,7 +104,7 @@
 
         </div>
 
-        <!-- RIGHT SIDE: CART -->
+        
         <div class="col-2" hidden="@hidePurchaseCart">
 
             <h3>Shopping Cart</h3>
@@ -132,7 +132,8 @@
 
     </div>
 </div>
-
+-->
+<!--
 @code {
 
     private string? deviceName;
@@ -182,5 +183,7 @@
         navigation.NavigateTo("/purchase/createpurchase");
     }
 }
+-->
+
 
 
