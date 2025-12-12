@@ -41,7 +41,7 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 string? URI2API = builder.Configuration.GetValue(typeof(string), "Cactus_API") as string;
 
 //We creare the service for accesing the API from where .WEB project
-builder.Services.AddScoped<CactusAPIClient>(sp => new CactusAPIClient(URI2API, new HttpClient()));
+builder.Services.AddScoped<AppForSEII2526APIClient>(sp => new AppForSEII2526APIClient(URI2API, new HttpClient()));
 //adding an In-memory state container service
 builder.Services.AddScoped<RentalStateContainer>();
 

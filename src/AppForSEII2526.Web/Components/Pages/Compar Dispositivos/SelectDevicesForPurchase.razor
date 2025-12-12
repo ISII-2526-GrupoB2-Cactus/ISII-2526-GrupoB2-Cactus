@@ -1,0 +1,186 @@
+﻿@page "/purchase/selectdevicesforpurchase"
+
+@using Microsoft.AspNetCore.Authorization
+@using AppForSEII2526.Web.API
+
+
+
+@inject AppForSEII2526APIClient apiclient
+@inject ILogger<SelectDevicesForPurchase> logger
+@inject PurchaseStateContainer purchaseState
+@inject NavigationManager navigation
+
+@attribute [Authorize]
+
+<h3>Select Devices For Purchase</h3>
+
+<div class="container-fluid">
+
+    <!-- ERROR PANEL -->
+    <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
+        <p id="ErrorsShown">Errors: @errors</p>
+    </div>
+
+    <div class="row">
+
+        <!-- LEFT SIDE -->
+        <div class="col-8">
+
+            <!-- FILTERS -->
+            <div class="row">
+
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Name</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Device name"
+                               @bind="deviceName">
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Color</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Color"
+                               @bind="deviceColor">
+                    </div>
+                </div>
+
+                <div class="col">
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="SearchDevices">
+                        Search devices
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- TABLE -->
+            <div class="row">
+                @if (devices == null)
+                {
+                    <p>Loading devices...</p>
+                }
+                else
+                {
+                    <div class="mh-100 table-responsive">
+                        <table class="table table-hover" id="TableOfDevices">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Brand</th>
+                                    <th>Model</th>
+                                    <th>Color</th>
+                                    <th>Price</th>
+                                    <th>Add</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var device in devices)
+                                {
+                                    <tr id="DeviceData_@device.Id">
+                                        <td>@device.Name</td>
+                                        <td>@device.Brand</td>
+                                        <td>@device.Model</td>
+                                        <td>@device.Color</td>
+                                        <td>@device.PriceForPurchase €</td>
+                                        <td>
+                                            <button class="btn btn-outline-secondary"
+                                                    @onclick="@(() => AddDevice(device))">
+                                                Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE: CART -->
+        <div class="col-2" hidden="@hidePurchaseCart">
+
+            <h3>Shopping Cart</h3>
+
+            @foreach (var item in purchase.PurchaseItems)
+            {
+                <div class="row mb-1">
+                    <button type="button"
+                            class="btn btn-light"
+                            @onclick="@(() => RemovePurchaseItem(item))">
+                        x @item.Model - @item.PriceForPurchase €
+                    </button>
+                </div>
+            }
+
+            <div class="row mt-3">
+                <button type="button"
+                        class="btn btn-primary"
+                        @onclick="GoToPurchase">
+                    Purchase devices
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@code {
+
+    private string? deviceName;
+    private string? deviceColor;
+
+    private ICollection<DeviceForPurchaseDTO>? devices;
+
+    private string errors = "";
+    private bool hideErrors => errors.Length == 0;
+
+    
+    private PurchaseForCreateDTO purchase => purchaseState.Purchase;
+
+    private bool hidePurchaseCart => purchase.PurchaseItems.Count == 0;
+
+    private void AddDevice(DeviceForPurchaseDTO device)
+    {
+        purchaseState.AddDeviceForPurchase(device);
+    }
+
+    private void RemovePurchaseItem(PurchaseItemDTO item)
+    {
+        purchaseState.RemovePurchaseItem(item);
+    }
+
+    private async Task SearchDevices()
+    {
+        try
+        {
+            devices = await apiclient.GetDeviceForPurchaseAsync(deviceName, deviceColor);
+            errors = "";
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError(ex, "Error while searching devices");
+            errors = "Error while connecting to the system";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchDevices();
+    }
+
+    private void GoToPurchase()
+    {
+        navigation.NavigateTo("/purchase/createpurchase");
+    }
+}
+
+
