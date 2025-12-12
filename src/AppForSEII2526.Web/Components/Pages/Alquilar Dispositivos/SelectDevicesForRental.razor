@@ -7,7 +7,7 @@
 
 
 @inject ILogger<SelectDevicesForRental> logger
-@inject CactusAPIClient apiclient
+@inject AppForSEII2526APIClient apiclient
 @inject RentalStateContainer rentalState
 @inject NavigationManager navigation
 
@@ -212,7 +212,7 @@
 
         try
         {
-            //modelsNames = await apiclient.GetModelsAsync();
+            modelsNames = await apiclient.GetModelsAsync(null);
             //var allDevices = await apiclient.GetDevicesForRentalAsync(null, null);
             //modelsNames = allDevices.Select(d => d.Model).Distinct().OrderBy(m => m).ToList();
             

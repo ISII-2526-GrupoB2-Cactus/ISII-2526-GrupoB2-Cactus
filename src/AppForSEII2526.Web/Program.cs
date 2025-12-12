@@ -1,5 +1,7 @@
 using AppForSEII2526.Web;
 using AppForSEII2526.Web.API;
+
+//using AppForSEII2526.Web.API;
 using AppForSEII2526.Web.Components;
 using AppForSEII2526.Web.Components.Account;
 using AppForSEII2526.Web.Data;
@@ -38,10 +40,11 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 // this variable obtains the url where the API has been deployed
-string? URI2API = builder.Configuration.GetValue(typeof(string), "Cactus_API") as string;
+string? URI2API = builder.Configuration.GetValue(typeof(string), "AppForSEII2526_API") as string;
+builder.Services.AddScoped<AppForSEII2526APIClient>(sp => new AppForSEII2526APIClient(URI2API, new HttpClient()));
 
 //We creare the service for accesing the API from where .WEB project
-builder.Services.AddScoped<AppForSEII2526APIClient>(sp => new AppForSEII2526APIClient(URI2API, new HttpClient()));
+//builder.Services.AddScoped<CactusAPIClient>(sp => new CactusAPIClient(URI2API, new HttpClient()));
 //adding an In-memory state container service
 builder.Services.AddScoped<RentalStateContainer>();
 
