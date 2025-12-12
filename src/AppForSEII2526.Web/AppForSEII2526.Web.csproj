@@ -8,12 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <OpenApiReference Include="OpenAPIs\swagger1.json" CodeGenerator="NSwagCSharp" ClassName="AppForSEII2526APIClient">
-      <SourceUri>https://localhost:7067/swagger/v1/swagger.json</SourceUri>
-    </OpenApiReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.17" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.16" />
@@ -35,6 +29,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\test\AppForSEII2526.UIT\AppForSEII2526.UIT.csproj" />
     <ProjectReference Include="..\AppForSEII2526.API\AppForSEII2526.API.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="OpenAPIs\" />
   </ItemGroup>
 
 </Project>
