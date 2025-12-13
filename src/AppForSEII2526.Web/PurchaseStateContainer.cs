@@ -15,8 +15,12 @@ namespace AppForSEII2526.Web
 
         public void AddDeviceForPurchase(DeviceForPurchaseDTO device)
         {
-            if (!Purchase.PurchaseItems.Any(pi => pi.DeviceID == device.Id))
+            var existingItem = Purchase.PurchaseItems
+                .FirstOrDefault(pi => pi.DeviceID == device.Id);
+
+            if (existingItem == null)
             {
+                // Primera vez que se añade
                 Purchase.PurchaseItems.Add(new PurchaseItemDTO
                 {
                     DeviceID = device.Id,
@@ -27,10 +31,17 @@ namespace AppForSEII2526.Web
                     Quantity = 1,
                     Description = null
                 });
-
-                ComputeTotalPrice();
             }
+            else
+            {
+                // Ya existe → aumentamos cantidad
+                existingItem.Quantity++;
+            }
+
+            ComputeTotalPrice();
+            NotifyStateChanged();
         }
+
 
         private void ComputeTotalPrice()
         {
@@ -40,10 +51,19 @@ namespace AppForSEII2526.Web
 
         public void RemovePurchaseItem(PurchaseItemDTO item)
         {
+            if (item.Quantity > 1)
+            {
+                item.Quantity--;
+            }
+            else
+            {
+                Purchase.PurchaseItems.Remove(item);
+            }
 
-            Purchase.PurchaseItems.Remove(item);
             ComputeTotalPrice();
+            NotifyStateChanged();
         }
+
 
         public void ClearPurchaseCart()
         {

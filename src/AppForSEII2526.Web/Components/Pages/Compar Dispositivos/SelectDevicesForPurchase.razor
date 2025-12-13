@@ -114,7 +114,7 @@
                     <button type="button"
                             class="btn btn-light"
                             @onclick="@(() => RemovePurchaseItem(item))">
-                        x @item.Model - @item.PriceForPurchase €
+                        @item.Model (x@(item.Quantity)) - @item.PriceForPurchase €
                     </button>
                 </div>
             }
@@ -169,7 +169,7 @@
         {
             logger.LogError($"{DateTime.Now} Error: {ex}");
             errors = "Error while connecting to the system";
-            devices = new List<DeviceForPurchaseDTO>(); // 🔑 CLAVE
+            devices = new List<DeviceForPurchaseDTO>(); 
         }
 
         StateHasChanged();
