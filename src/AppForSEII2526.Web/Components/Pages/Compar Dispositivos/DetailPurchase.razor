@@ -6,7 +6,7 @@
 @inject AppForSEII2526APIClient apiclient
 
 @attribute [Authorize]
-<!--
+
 <h3>Purchase Details</h3>
 
 @if (purchase == null)
@@ -83,12 +83,10 @@ else
 }
 
 @code {
-
     [Parameter]
-    [SupplyParameterFromQuery]
-    public int id { get; set; }
-
-    private PurchaseDetailDTO? purchase;
+    [SupplyParameterFromQuery(Name = "id")]
+    public int PurchaseID { get; set; }
+    private PurchaseDetailDTO purchase;
     private string error = "";
 
     [CascadingParameter]
@@ -97,22 +95,23 @@ else
     protected override async Task OnInitializedAsync()
     {
         string userName = "";
-
-        // CHECK AUTHENTICATED USER
         if (authenticationState is not null)
         {
             var authState = await authenticationState;
             var user = authState?.User;
 
-            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            if (user is not null)
             {
-                userName = user.Identity.Name;
+                if (user.Identity is not null && user.Identity.IsAuthenticated && user.IsInRole("User"))
+                {
+                    userName = user.Identity.Name;
+                }
             }
         }
 
         try
         {
-            purchase = await apiclient.GetPurchaseAsync(id);
+            purchase = await apiclient.GetPurchaseAsync(PurchaseID);
         }
         catch (ApiException)
         {
@@ -120,11 +119,11 @@ else
         }
 
         // AUTHORIZATION CHECK
-        if (purchase == null || purchase.CustomerName != userName)
+        if (purchase == null)
         {
-            error = $"Error! You are not authorized to see this purchase or there is not a purchase with id={id}";
+            error = $"Error! You are not authorized to see this purchase or there is not a purchase with id={PurchaseID}";
         }
     }
 }
 
--->
+
