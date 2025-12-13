@@ -1,19 +1,18 @@
 ﻿@page "/purchase/selectdevicesforpurchase"
 
 @using Microsoft.AspNetCore.Authorization
-<!--@using AppForSEII2526.Web.API-->
-
-@using AppForSEII2526.Web.API;
+@using AppForSEII2526.Web.API
 
 @inject AppForSEII2526APIClient apiclient
 @inject ILogger<SelectDevicesForPurchase> logger
 @inject PurchaseStateContainer purchaseState
 @inject NavigationManager navigation
 
-@attribute [Authorize]
+@attribute [Authorize] 
 
-<!--<h3>Select Devices For Purchase</h3>-->
-<!--
+
+<h3>Select Devices For Purchase</h3>
+
 <div class="container-fluid">
 
     
@@ -132,14 +131,13 @@
 
     </div>
 </div>
--->
-<!--
 @code {
 
     private string? deviceName;
     private string? deviceColor;
 
-    private ICollection<DeviceForPurchaseDTO>? devices;
+    private ICollection<DeviceForPurchaseDTO> devices = new List<DeviceForPurchaseDTO>();
+
 
     private string errors = "";
     private bool hideErrors => errors.Length == 0;
@@ -148,6 +146,7 @@
     private PurchaseForCreateDTO purchase => purchaseState.Purchase;
 
     private bool hidePurchaseCart => purchase.PurchaseItems.Count == 0;
+
 
     private void AddDevice(DeviceForPurchaseDTO device)
     {
@@ -159,7 +158,7 @@
         purchaseState.RemovePurchaseItem(item);
     }
 
-    private async Task SearchDevices()
+    public async void SearchDevices()
     {
         try
         {
@@ -168,14 +167,18 @@
         }
         catch (ApiException ex)
         {
-            logger.LogError(ex, "Error while searching devices");
+            logger.LogError($"{DateTime.Now} Error: {ex}");
             errors = "Error while connecting to the system";
+            devices = new List<DeviceForPurchaseDTO>(); // 🔑 CLAVE
         }
+
+        StateHasChanged();
     }
+
 
     protected override async Task OnInitializedAsync()
     {
-        await SearchDevices();
+        SearchDevices();
     }
 
     private void GoToPurchase()
@@ -183,7 +186,7 @@
         navigation.NavigateTo("/purchase/createpurchase");
     }
 }
--->
+
 
 
 

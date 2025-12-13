@@ -2,18 +2,19 @@
 
 @using AppForSEII2526.Web.API
 @using Microsoft.AspNetCore.Authorization
+@using AppForSEII2526.Web.Components.Shared
 
 @inject AppForSEII2526APIClient apiclient
 @inject ILogger<CreatePurchase> logger
 @inject PurchaseStateContainer purchaseState
 @inject NavigationManager navigation
 
-@attribute [Authorize]
+@attribute [Authorize] 
  
 <h3>Create Purchase</h3>
-<!--
-<EditForm Model="purchase" OnValidSubmit="OpenDialog"> -->
-<!--
+
+<EditForm Model="purchase" OnValidSubmit="OpenDialog">
+
     <div class="row">
         <DataAnnotationsValidator />
         <ValidationSummary class="row alert alert-danger" />
@@ -22,10 +23,10 @@
     <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
         <p id="ErrorsShown">Errors: @messageError</p>
     </div>
-    -->
-    <!-- CUSTOMER DATA --> -->
+   
+    
 
-    <!--
+  
     <div class="row g-3">
         
         <div class="col-md">
@@ -50,9 +51,7 @@
         </div>
 
     </div>
-    -->
-
-    <!-- 
+    
    
     <div class="row g-2">
 
@@ -77,25 +76,22 @@
         </div>
 
     </div>
-    --> 
-    <!-- PURCHASE SUMMARY -->
-
-    <!--
+   
+   
     <h4>Purchase detail</h4>
 
     <p>
-        <b>Total price:</b> @purchaseState.TotalPrice €
+        <b>Total price:</b> @purchase.TotalPrice €
         <button class="btn btn-outline-primary"
                 type="button"
                 @onclick="ModifyPurchaseItems">
             Modify devices
         </button>
     </p>
-    -->
+    
 
     
-    <!-- PURCHASE ITEMS -->
-<!--
+   
     <div class="mh-100 table-responsive">
         <table class="table table-hover">
             <thead>
@@ -123,26 +119,24 @@
     </div>
 
 </EditForm>
--->
 
 
-<!-- CONFIRMATION DIALOG -->
-<!--@if (DialogIsOpen)
+
+@if (DialogIsOpen)
 {
         <Dialog Caption="Confirm Purchase"
-                Message="Do you want to proceed with the purchase?"
-                OnClose="@OnDialogClose"
-                Type="Dialog.Category.SaveNot">
+        Message="Do you want to proceed with the purchase?"
+        OnClose="@OnDialogClose"
+        Type="Dialog.Category.SaveNot">
         </Dialog>
 }
 
 @code {
 
     private string messageError = "";
-    private bool hideErrors => messageError.Length == 0;
+    private bool hideErrors { get { return messageError.Length == 0; } }
 
-    private bool purchaseButtonDisabled =>
-        purchase.PurchaseItems == null || purchase.PurchaseItems.Count == 0;
+    private bool purchaseButtonDisabled { get { return (purchase.PurchaseItems == null || purchase.PurchaseItems.Count == 0); } }
 
     private bool DialogIsOpen = false;
 
@@ -158,35 +152,73 @@
         navigation.NavigateTo("/purchase/selectdevicesforpurchase");
     }
 
-    private async Task OnDialogClose(bool accepted)
+    
+    
+    private async Task OnDialogClose(bool isOk)
     {
+
         DialogIsOpen = false;
-
-        if (!accepted)
-            return;
-
-        if (purchase.PurchaseItems.Count == 0)
-            return;
-
-        try
+        if (isOk)
         {
-            var created = await apiclient.CreatePurchaseAsync(purchase);
-            purchaseState.PurchaseProcessed();
-            navigation.NavigateTo($"/purchase/detailpurchase?id={created.Id}");
-        }
-        catch (ApiException<ValidationProblemDetails> validationException)
-        {
-            messageError = string.Join(" ",
-                validationException.Result.Errors.SelectMany(e => e.Value));
-        }
-        catch (ApiException ex)
-        {
-            logger.LogError($"{DateTime.Now} Error: {ex}");
-            messageError = "Error while processing your purchase. Please try again later.";
+            // Process the data introduced by the user if they are valid
+            if (purchase.PurchaseItems.Count > 0)
+            {
+                try
+                {
+                    var purchased = await apiclient.CreatePurchaseAsync(purchase);
+                    purchaseState.PurchaseProcessed();
+                    navigation.NavigateTo($"/purchase/detailpurchase?id={purchased.Id}");
+                }
+                catch (ApiException<ValidationProblemDetails> apiexceptionvalidation)
+                {
+
+                    if (apiexceptionvalidation.Result.Errors.Values != null)
+                    {
+                        messageError = "";
+                        foreach (var errors in apiexceptionvalidation.Result.Errors.Values)
+                            messageError = string.Join("(*) ", messageError, string.Join(" (*) ", errors));
+                    }
+                }
+                catch (ApiException apiexception)
+                {
+                    //we need to inform user that there was some other error while processing the request
+                    messageError = "Error while processing your request, please try again later!";
+
+                }
+
+            }
         }
     }
+    
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user is not null)
+            {
+                if (user.Identity is not null && user.Identity.IsAuthenticated)
+                {
+                    purchase.CustomerName = user.Identity.Name;
+                }
+            }
+            purchase.CustomerName = purchase.CustomerName == null ? "" : purchase.CustomerName;
+            purchase.CustomerSurname = purchase.CustomerSurname == null ? "" : purchase.CustomerSurname;
+            purchase.DeliveryAddress = purchase.DeliveryAddress == null ? "" : purchase.DeliveryAddress;
+
+        }
+    }
+
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
 }
- -->
+ 
 
 
 
