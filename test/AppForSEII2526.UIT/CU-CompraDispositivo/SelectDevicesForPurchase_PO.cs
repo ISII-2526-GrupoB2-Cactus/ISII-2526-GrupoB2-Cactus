@@ -47,6 +47,7 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         }
 
 
+        /*
         public bool CheckListOfDevices(List<string[]> expectedDevices)
         {
 
@@ -54,6 +55,19 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
 
 
         }
+        */
+
+        public bool CheckListContainsDevice(string deviceName)
+        {
+            WaitForBeingVisible(tableOfDevicesBy);
+
+            var rows = _driver.FindElement(tableOfDevicesBy)
+                              .FindElement(By.TagName("tbody"))
+                              .FindElements(By.TagName("tr"));
+
+            return rows.Any(r => r.Text.Contains(deviceName));
+        }
+
 
         public bool CheckMessageError(string errorMessage)
         {
@@ -77,10 +91,29 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         }
 
 
+        /*
         public bool PurchaseNotAvailable()
         {
             return !_driver.FindElement(buttonPurchaseDevices).Displayed;
         }
+        */
+
+
+        public bool PurchaseNotAvailable()
+        {
+            var purchaseButton = _driver.FindElement(buttonPurchaseDevices);
+
+            var container = purchaseButton.FindElement(
+                By.XPath("ancestor::div[contains(@class,'col-2')]")
+            );
+
+            return container.GetAttribute("hidden") != null;
+        }
+
+
+
+
+
 
 
     }

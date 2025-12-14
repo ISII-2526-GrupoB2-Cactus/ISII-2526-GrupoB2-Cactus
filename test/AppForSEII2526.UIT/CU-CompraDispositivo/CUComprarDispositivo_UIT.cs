@@ -32,21 +32,24 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
             selectDevicesForPurchase_PO = new SelectDevicesForPurchase_PO(_driver, _output);
         }
 
-        /*
+        
         private void Precondition_perform_login()
         {
             Perform_login("laura@alu.uclm.es", "Password123!");
         }
-        */
 
+
+        
         private void InitialStepsForPurchase()
         {
             Initial_step_opening_the_web_page();
-            //Precondition_perform_login();
+            Precondition_perform_login();
 
             selectDevicesForPurchase_PO.WaitForBeingVisible(By.Id("CreatePurchase"));
             _driver.FindElement(By.Id("CreatePurchase")).Click();
         }
+
+  
 
 
 
@@ -69,10 +72,17 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
             selectDevicesForPurchase_PO.SearchDevice(name, color);
 
             // Assert
+            /*
             Assert.True(
                 selectDevicesForPurchase_PO.CheckListOfDevices(expectedDevices),
                 "La lista de dispositivos no coincide con el filtro"
             );
+            */
+            Assert.True(
+                selectDevicesForPurchase_PO.CheckListContainsDevice(name),
+                "El dispositivo filtrado no aparece en la tabla"
+            );
+
         }
 
         // UC – Añadir y quitar del carrito

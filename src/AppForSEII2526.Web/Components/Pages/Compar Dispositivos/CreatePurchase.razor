@@ -9,7 +9,7 @@
 @inject PurchaseStateContainer purchaseState
 @inject NavigationManager navigation
 
-@* @attribute [Authorize] *@
+@attribute [Authorize] 
 
 <h3>Create Purchase</h3>
 
@@ -31,21 +31,21 @@
         
         <div class="col-md">
             <div class="form-floating mb-3">
-                <InputText @bind-Value="purchase.CustomerName" class="form-control" />
+                <InputText @bind-Value="purchase.CustomerName" class="form-control" id="Name" />
                 <label>Customer Name</label>
             </div>
         </div>
 
         <div class="col-md">
             <div class="form-floating mb-3">
-                <InputText @bind-Value="purchase.CustomerSurname" class="form-control" />
+                <InputText @bind-Value="purchase.CustomerSurname" class="form-control" id="Surname" />
                 <label>Customer Surname</label>
             </div>
         </div>
 
         <div class="col-md">
             <div class="form-floating mb-3">
-                <InputText @bind-Value="purchase.DeliveryAddress" class="form-control" />
+                <InputText @bind-Value="purchase.DeliveryAddress" class="form-control" id="DeliveryAddress" />
                 <label>Delivery Address</label>
             </div>
         </div>
@@ -57,7 +57,7 @@
 
         <div class="col-md">
             <div class="form-floating">
-                <InputSelect class="form-select" @bind-Value="purchase.PaymentMethod">
+                <InputSelect class="form-select" @bind-Value="purchase.PaymentMethod" id="PaymentMethod">
                     <option value="@PaymentMethod.CreditCard">Credit Card</option>
                     <option value="@PaymentMethod.PayPal">PayPal</option>
                 </InputSelect>
@@ -69,6 +69,7 @@
             <div class="form-floating">
                 <button class="btn btn-primary"
                         type="submit"
+                        id="Submit"
                         disabled="@purchaseButtonDisabled">
                     Purchase devices
                 </button>
@@ -84,7 +85,8 @@
         <b>Total price:</b> @purchase.TotalPrice €
         <button class="btn btn-outline-primary"
                 type="button"
-                @onclick="ModifyPurchaseItems">
+                @onclick="ModifyPurchaseItems"
+                id="ModifyDevices">
             Modify devices
         </button>
     </p>
@@ -93,7 +95,7 @@
     
    
     <div class="mh-100 table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover" id="TableOfPurchaseItems">
             <thead>
                 <tr>
                     <th>Brand</th>
