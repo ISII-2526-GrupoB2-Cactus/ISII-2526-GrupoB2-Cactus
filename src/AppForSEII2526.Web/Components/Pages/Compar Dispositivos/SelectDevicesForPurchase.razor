@@ -8,7 +8,7 @@
 @inject PurchaseStateContainer purchaseState
 @inject NavigationManager navigation
 
-@attribute [Authorize] 
+@* @attribute [Authorize] *@
 
 
 <h3>Select Devices For Purchase</h3>
@@ -30,28 +30,31 @@
 
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text">Name</span>
+                        <span class="input-group-text" id="basic-addon1">Name</span>
                         <input type="text"
                                class="form-control"
                                placeholder="Device name"
-                               @bind="deviceName">
+                               @bind="deviceName"
+                               id="inputName">
                     </div>
                 </div>
 
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text">Color</span>
+                        <span class="input-group-text" id="basic-addon1">Color</span>
                         <input type="text"
                                class="form-control"
                                placeholder="Color"
-                               @bind="deviceColor">
+                               @bind="deviceColor"
+                               id="selectColor">
                     </div>
                 </div>
 
                 <div class="col">
                     <button type="button"
                             class="btn btn-primary"
-                            @onclick="SearchDevices">
+                            @onclick="SearchDevices"
+                            id="searchDevices">
                         Search devices
                     </button>
                 </div>
@@ -89,6 +92,7 @@
                                         <td>@device.PriceForPurchase €</td>
                                         <td>
                                             <button class="btn btn-outline-secondary"
+                                                    id="deviceToPurchase_@device.Id"
                                                     @onclick="@(() => AddDevice(device))">
                                                 Add
                                             </button>
@@ -113,6 +117,7 @@
                 <div class="row mb-1">
                     <button type="button"
                             class="btn btn-light"
+                            id="removeDevice_@item.DeviceID"
                             @onclick="@(() => RemovePurchaseItem(item))">
                         @item.Model (x@(item.Quantity)) - @item.PriceForPurchase €
                     </button>
@@ -122,7 +127,8 @@
             <div class="row mt-3">
                 <button type="button"
                         class="btn btn-primary"
-                        @onclick="GoToPurchase">
+                        @onclick="GoToPurchase"
+                        id="purchaseDeviceButton">
                     Purchase devices
                 </button>
             </div>
