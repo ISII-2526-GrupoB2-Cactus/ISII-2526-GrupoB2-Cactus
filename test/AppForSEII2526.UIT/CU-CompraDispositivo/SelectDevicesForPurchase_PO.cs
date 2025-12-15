@@ -20,20 +20,8 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         {
         }
 
+
         /*
-        public void SearchDevice(string name, string color)
-        {
-            WaitForBeingClickable(inputName);
-            _driver.FindElement(inputName).SendKeys(name);
-
-            if (color == "") color = "All";
-            SelectElement selectElement = new SelectElement(_driver.FindElement(inputColor));
-            selectElement.SelectByText(color);
-
-            _driver.FindElement(buttonSearchDevices).Click();
-        }
-        */
-
         public void SearchDevice(string name, string color)
         {
             WaitForBeingClickable(inputName);
@@ -45,29 +33,33 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
 
             _driver.FindElement(buttonSearchDevices).Click();
         }
+        */
+        public void SearchDevice(string name, string color)
+        {
+            // Esperamos a que el input esté listo
+            WaitForBeingVisible(inputName);
 
+            // NAME
+            var nameInput = _driver.FindElement(inputName);
+            nameInput.Clear();
+            if (!string.IsNullOrEmpty(name))
+                nameInput.SendKeys(name);
 
-        /*
+            // COLOR
+            var colorInput = _driver.FindElement(inputColor);
+            colorInput.Clear();
+            if (!string.IsNullOrEmpty(color))
+                colorInput.SendKeys(color);
+
+            // Buscar
+            _driver.FindElement(buttonSearchDevices).Click();
+        }
+        
         public bool CheckListOfDevices(List<string[]> expectedDevices)
         {
 
             return CheckBodyTable(expectedDevices, tableOfDevicesBy);
-
-
         }
-        */
-
-        public bool CheckListContainsDevice(string deviceName)
-        {
-            WaitForBeingVisible(tableOfDevicesBy);
-
-            var rows = _driver.FindElement(tableOfDevicesBy)
-                              .FindElement(By.TagName("tbody"))
-                              .FindElements(By.TagName("tr"));
-
-            return rows.Any(r => r.Text.Contains(deviceName));
-        }
-
 
         public bool CheckMessageError(string errorMessage)
         {
@@ -91,25 +83,21 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         }
 
 
-        /*
         public bool PurchaseNotAvailable()
         {
-            return !_driver.FindElement(buttonPurchaseDevices).Displayed;
+            return _driver.FindElement(buttonPurchaseDevices).Displayed == false;
         }
-        */
 
-
-        public bool PurchaseNotAvailable()
+        public bool NoDevicesAvailable()
         {
-            var purchaseButton = _driver.FindElement(buttonPurchaseDevices);
+            WaitForBeingVisible(By.Id("TableOfDevices"));
 
-            var container = purchaseButton.FindElement(
-                By.XPath("ancestor::div[contains(@class,'col-2')]")
-            );
+            var rows = _driver.FindElement(By.Id("TableOfDevices"))
+                              .FindElement(By.TagName("tbody"))
+                              .FindElements(By.TagName("tr"));
 
-            return container.GetAttribute("hidden") != null;
+            return rows.Count == 0;
         }
-
 
 
 

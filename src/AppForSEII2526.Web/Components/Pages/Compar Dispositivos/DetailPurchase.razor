@@ -17,9 +17,16 @@ else
 {
     <table class="table table-borderless table-sm">
         <tr>
-            <th>Name and Surname</th>
-            <td id="NameSurname">
-                @purchase.CustomerName @purchase.CustomerSurname
+            <th>Name</th>
+            <td id="Name">
+                @purchase.CustomerName
+            </td>
+        </tr>
+
+        <tr>
+            <th>Surname</th>
+            <td id="Surname">
+                @purchase.CustomerSurname
             </td>
         </tr>
 
@@ -118,7 +125,7 @@ else
             purchase = null;
         }
 
-        // AUTHORIZATION CHECK
+        
         if (purchase == null)
         {
             error = $"Error! You are not authorized to see this purchase or there is not a purchase with id={PurchaseID}";

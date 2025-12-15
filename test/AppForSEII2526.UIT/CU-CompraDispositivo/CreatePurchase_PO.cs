@@ -10,15 +10,9 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
     {
         private By _nameBy = By.Id("Name");
         private By _surnameBy = By.Id("Surname");
-        private By _deliveryAddressBy = By.Id("DeliveryAddress");
-        private By _paymentMethodBy = By.Id("PaymentMethod");
-        private By _submitBy = By.Id("Submit");
-        private By _modifyDevicesBy = By.Id("ModifyDevices");
-        private By _tableOfItemsBy = By.Id("TableOfPurchaseItems");
 
         private IWebElement _name() => _driver.FindElement(_nameBy);
         private IWebElement _surname() => _driver.FindElement(_surnameBy);
-
         private IWebElement _deliveryAddress() => _driver.FindElement(By.Id("DeliveryAddress"));
         private IWebElement _paymentMethod() => _driver.FindElement(By.Id("PaymentMethod"));
 
@@ -29,34 +23,31 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         public void FillInPurchaseInfo(string name, string surname, string deliveryAddress, string paymentMethod)
         {
             WaitForBeingVisible(_nameBy);
+            WaitForBeingVisible(_surnameBy);
 
-            _name().Clear();
             _name().SendKeys(name);
-
-            _surname().Clear();
             _surname().SendKeys(surname);
-
-            _deliveryAddress().Clear();
             _deliveryAddress().SendKeys(deliveryAddress);
 
             SelectElement selectElement = new SelectElement(_paymentMethod());
-            selectElement.SelectByText(paymentMethod);
+            selectElement.SelectByValue(paymentMethod);
+
         }
 
         public void PressPurchaseDevices()
         {
-            _driver.FindElement(_submitBy).Click();
+            _driver.FindElement(By.Id("Submit")).Click();
         }
 
         public void PressModifyDevices()
         {
-            _driver.FindElement(_modifyDevicesBy).Click();
+            _driver.FindElement(By.Id("ModifyDevices")).Click();
         }
 
 
         public bool CheckListOfPurchaseItems(List<string[]> expectedItems)
         {
-            return CheckBodyTable(expectedItems, _tableOfItemsBy);
+            return CheckBodyTable(expectedItems, By.Id("TableOfPurchaseItems"));
         }
 
         public bool CheckValidationError(string expectedError)
@@ -65,11 +56,28 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         }
 
 
+        public bool CheckPurchaseFormData(string name, string surname, string deliveryAddress, string paymentMethod)
+        {
+            bool result = true;
 
+            result &= _driver.FindElement(By.Id("Name"))
+                             .GetAttribute("value")
+                             .Contains(name);
 
+            result &= _driver.FindElement(By.Id("Surname"))
+                             .GetAttribute("value")
+                             .Contains(surname);
 
+            result &= _driver.FindElement(By.Id("DeliveryAddress"))
+                             .GetAttribute("value")
+                             .Contains(deliveryAddress);
 
+            result &= _driver.FindElement(By.Id("PaymentMethod"))
+                             .GetAttribute("value")
+                             .Contains(paymentMethod);
 
+            return result;
+        }
 
     }
 }
