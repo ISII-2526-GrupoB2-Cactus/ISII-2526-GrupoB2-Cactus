@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppForSEII2526.UIT.CU_CompraDispositivo
 {
@@ -14,14 +15,14 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         private const int deviceId1 = 1;
         private const string deviceName1 = "iPhone 15";
         private const string deviceBrand1 = "Apple";
-        private const string deviceModel1 = "iPhone 15";
+        private const string deviceModel1 = "Galaxy S23";
         private const string deviceColor1 = "Negro";
         private const string devicePrice1 = "1200";
 
         private const int deviceId2 = 2;
         private const string deviceName2 = "Galaxy S23";
         private const string deviceBrand2 = "Samsung";
-        private const string deviceModel2 = "Galaxy S23";
+        private const string deviceModel2 = "iPhone 15";
         private const string deviceColor2 = "Gris";
         private const string devicePrice2 = "999";
 
@@ -32,14 +33,14 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
             selectDevicesForPurchase_PO = new SelectDevicesForPurchase_PO(_driver, _output);
         }
 
-        
+
         private void Precondition_perform_login()
         {
             Perform_login("laura@alu.uclm.es", "Password123!");
         }
 
 
-        
+
         private void InitialStepsForPurchase()
         {
             Initial_step_opening_the_web_page();
@@ -49,81 +50,207 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
             _driver.FindElement(By.Id("CreatePurchase")).Click();
         }
 
-  
 
-
-
-        // UC – Filtrar dispositivos
+        
         [Theory]
-        [InlineData(deviceName1, deviceColor1)]
-        [InlineData(deviceName2, deviceColor2)]
+        [InlineData("Laura", "Gonzalez Rico", "Calle Angel 1", "CreditCard")]
+        [InlineData("Laura", "Gonzalez Rico", "Calle Angel 1", "PayPal")]
         [Trait("LevelTesting", "Functional Testing")]
-        public void UC_Compra_AF1_FiltrarDispositivos(string name, string color)
+        public void CP_01_02_FlujoBasico(string name, string surname, string deliveryAddress, string paymentMethod)
         {
-            // Arrange
+            
+            var createPurchase = new CreatePurchase_PO(_driver, _output);
+            var detailPurchase = new DetailPurchase_PO(_driver, _output);
+
             InitialStepsForPurchase();
 
+           
+            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
+
+            
+            _driver.FindElement(By.Id("purchaseDeviceButton")).Click();
+
+            
+            createPurchase.FillInPurchaseInfo(
+                name,
+                surname,
+                deliveryAddress,
+                paymentMethod
+            );
+
+            
+            createPurchase.PressPurchaseDevices();
+            createPurchase.PressOkModalDialog();
+
+            
+            Assert.True(
+                detailPurchase.CheckPurchaseDetail(name, surname, deliveryAddress, paymentMethod, DateTime.Now, devicePrice1 + " €" ),
+                "El detalle de la compra no es correcto"
+            );
+
+            
             var expectedDevices = new List<string[]>
             {
-                new string[] { name }
+                new string[]
+                {
+                    deviceBrand1,
+                    deviceModel1,
+                    deviceColor1,
+                    devicePrice1 + " €",
+                    "1"
+                }
             };
 
-            // Act
-            selectDevicesForPurchase_PO.SearchDevice(name, color);
-
-            // Assert
-            /*
             Assert.True(
-                selectDevicesForPurchase_PO.CheckListOfDevices(expectedDevices),
-                "La lista de dispositivos no coincide con el filtro"
+                detailPurchase.CheckListOfPurchasedDevices(expectedDevices),
+                "Los dispositivos comprados no son correctos"
             );
-            */
-            Assert.True(
-                selectDevicesForPurchase_PO.CheckListContainsDevice(name),
-                "El dispositivo filtrado no aparece en la tabla"
-            );
-
         }
 
-        // UC – Añadir y quitar del carrito
         [Fact]
         [Trait("LevelTesting", "Functional Testing")]
-        public void UC_Compra_AF2_AddAndRemoveDevice()
+        public void CP_03_NoDispositivoDisponible()
         {
-            // Arrange
+            
             InitialStepsForPurchase();
 
-            // Act
+            selectDevicesForPurchase_PO.SearchDevice("NoExiste", "Rosa");
+
+            
+            Assert.True(
+                selectDevicesForPurchase_PO.NoDevicesAvailable(),
+                "No debería haber dispositivos disponibles para vender"
+            );
+        }
+
+
+
+        [Theory]
+        [InlineData(deviceName1, deviceBrand1, deviceModel1, deviceColor1, devicePrice1, "iPhone 15", "")]
+        [InlineData(deviceName1, deviceBrand1, deviceModel1, deviceColor1, devicePrice1, "", "Negro")]
+        [InlineData(deviceName1, deviceBrand1, deviceModel1, deviceColor1, devicePrice1, "iPhone 15", "Negro")]
+        [Trait("LevelTesting", "Functional Testing")]
+        public void CP_04_05_06_Filtros(string name, string brand, string model, string color, string price, string filterName, string filterColor)
+        {
+                InitialStepsForPurchase();
+                var expectedDevices = new List<string[]> { new string[] { name, brand, model, color, price + " €" }, };
+
+                selectDevicesForPurchase_PO.SearchDevice(filterName, filterColor);
+
+
+                Assert.True(
+                    selectDevicesForPurchase_PO.CheckListOfDevices(expectedDevices),
+                    "La lista de dispositivos no coincide con el filtro aplicado"
+                );
+        }
+
+
+            
+
+
+         
+        [Fact]
+        [Trait("LevelTesting", "Functional Testing")]
+        public void CP_07_AñadirYQuitarDispositivo()
+        {
+            
+            InitialStepsForPurchase();
+
+            
             selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
             selectDevicesForPurchase_PO.RemoveDeviceFromPurchaseCart(deviceId1);
 
-            // Assert
+            
             Assert.True(
                 selectDevicesForPurchase_PO.PurchaseNotAvailable(),
-                "El botón de compra debería no estar disponible tras vaciar el carrito"
+                "El botón de compra debe estar oculto si el carrito está vacío"
             );
         }
 
 
-        // UC – Añadir varias unidades
+
         [Fact]
         [Trait("LevelTesting", "Functional Testing")]
-        public void UC_Compra_AF3_AddMultipleUnitsOfSameDevice()
+        public void CP_08_ComprasinDispositivos()
         {
-            // Arrange
+
             InitialStepsForPurchase();
 
-            // Act
-            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
-            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
-            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
 
-            // Assert
-            Assert.False(
+            Assert.True(
                 selectDevicesForPurchase_PO.PurchaseNotAvailable(),
-                "El botón de compra debería estar disponible con productos en el carrito"
+                "No se debe poder comprar sin dispositivos en el carrito"
             );
         }
+
+        
+        [Theory]
+        [InlineData("", "Gonzalez Rico", "Calle Angel 1", "CreditCard", "The CustomerName field is required.")]
+        [InlineData("Laura", "", "Calle Angel 1", "CreditCard", "The CustomerSurname field is required.")]
+        [InlineData("Laura", "Gonzalez Rico", "", "CreditCard", "The DeliveryAddress field is required.")]
+        [Trait("LevelTesting", "Functional Testing")]
+        public void CP_9_10_11_12_DatosObligatorios(string name, string surname, string deliveryAddress, string paymentMethod, string expectedError)
+        {
+            
+            InitialStepsForPurchase();
+            var createPurchase = new CreatePurchase_PO(_driver, _output);
+
+            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
+            _driver.FindElement(By.Id("purchaseDeviceButton")).Click();
+
+            
+            createPurchase.FillInPurchaseInfo(name, surname, deliveryAddress, paymentMethod);
+            createPurchase.PressPurchaseDevices();
+
+            
+            Assert.True(
+                createPurchase.CheckValidationError(expectedError),
+                $"Debería aparecer el error: {expectedError}"
+            );
+        }
+
+
+
+        [Fact]
+        [Trait("LevelTesting", "Functional Testing")]
+        public void CP_13_VolverAtrasTrasRellenarDatosUsuario()
+        {
+            
+            InitialStepsForPurchase();
+            var createPurchase = new CreatePurchase_PO(_driver, _output);
+
+            
+            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
+            _driver.FindElement(By.Id("purchaseDeviceButton")).Click();
+
+            
+            createPurchase.FillInPurchaseInfo(
+                "Laura",
+                "Gonzalez Rico",
+                "C/ Pez 1",
+                "CreditCard"
+            );
+
+            
+            createPurchase.PressModifyDevices();
+
+            
+            _driver.FindElement(By.Id("purchaseDeviceButton")).Click();
+
+            
+            Assert.True(
+                createPurchase.CheckPurchaseFormData(
+                    "Laura",
+                    "Gonzalez Rico",
+                    "C/ Pez 1",
+                    "CreditCard"
+                ),
+                "Los datos del usuario deberían mantenerse al volver al formulario"
+            );
+        }
+
+
+
 
     }
 }
