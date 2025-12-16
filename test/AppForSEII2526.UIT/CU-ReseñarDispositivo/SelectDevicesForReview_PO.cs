@@ -70,8 +70,9 @@ namespace AppForSEII2526.UIT.ReviewDevices
 
         public void RemoveDeviceFromCart(string deviceName)
         {
-            WaitForBeingVisible(By.XPath($"//button[@id[starts-with(., 'removeDevice_')] and contains(text(), 'x {deviceName}')]"));
-            _driver.FindElement(By.XPath($"//button[@id[starts-with(., 'removeDevice_')] and contains(text(), 'x {deviceName}')]")).Click();
+            By locator = By.XPath($"//button[starts-with(@id, 'removeDevice_') and contains(., '{deviceName}')]");
+            WaitForBeingVisible(locator);
+            _driver.FindElement(locator).Click();
         }
 
         public void NavigateToCreateReview()
@@ -104,7 +105,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
             try
             {
                 // Contar botones de remover (cada uno empieza con "removeDevice_")
-                var removeButtons = _driver.FindElements(By.XPath("//button[@id[starts-with(., 'removeDevice_')]]"));
+                var removeButtons = _driver.FindElements(By.XPath("//button[starts-with(@id, 'removeDevice_')]"));
                 return removeButtons.Count == expectedCount;
             }
             catch
@@ -141,9 +142,10 @@ namespace AppForSEII2526.UIT.ReviewDevices
         {
             try
             {
-                // Verificar si hay un botón de remover con el nombre del dispositivo
-                var removeButton = _driver.FindElement(
-                    By.XPath($"//button[@id[starts-with(., 'removeDevice_')] and contains(text(), 'x {deviceName}')]"));
+                // NO usar WaitForBeingVisible aquí porque el elemento puede no existir
+                // Solo intentar encontrarlo sin espera
+                By locator = By.XPath($"//button[starts-with(@id, 'removeDevice_') and contains(., '{deviceName}')]");
+                var removeButton = _driver.FindElement(locator);
                 return removeButton.Displayed;
             }
             catch (NoSuchElementException)

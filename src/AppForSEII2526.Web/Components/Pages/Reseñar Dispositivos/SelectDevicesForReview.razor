@@ -5,6 +5,7 @@
 @inject ILogger<SelectDevicesForReview> logger
 @inject ReviewStateContainer reviewState
 @inject NavigationManager navigation
+@implements IAsyncDisposable
 
 @*@attribute [Authorize]*@
 
@@ -113,14 +114,28 @@
 
     private ReviewForCreateDTO review => reviewState.Review;
 
-    private void AddDevice(DeviceForReviewDTO device)
+    private async Task AddDevice(DeviceForReviewDTO device)
     {
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] AddDevice llamado para: {device.Name}");
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] Items antes: {review.ReviewItems.Count}");
+        
         reviewState.AddDeviceToReview(device);
+        
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] Items después: {review.ReviewItems.Count}");
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] hideReviewCart: {hideReviewCart}");
+        
+        await Task.Delay(100);
+        StateHasChanged();
+        
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] StateHasChanged llamado");
     }
 
-    private void RemoveReviewItem(ReviewItemDTO item)
+    private async Task RemoveReviewItem(ReviewItemDTO item)
     {
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] RemoveReviewItem llamado para: {item.Name}");
         reviewState.RemoveReviewItem(item);
+        await Task.Delay(100);
+        StateHasChanged();
     }
 
     public async void SearchDevices()
@@ -143,6 +158,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        reviewState.OnChange += StateHasChanged;
+        
         try
         {
             var allDevices = await apiclient.GetDevicesForReviewAsync(null, null);
@@ -157,6 +174,11 @@
         }
 
         SearchDevices();
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        reviewState.OnChange -= StateHasChanged;
     }
 
     private void CreateReview()
