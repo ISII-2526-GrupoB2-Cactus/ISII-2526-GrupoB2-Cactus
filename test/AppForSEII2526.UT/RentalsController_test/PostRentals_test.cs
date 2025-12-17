@@ -15,10 +15,10 @@ namespace AppForSEII2526.UT.RentalsController_test
     public class PostRentals_test : AppForSEII2526SqliteUT
     {
         private const string _userName = "carlos@uclm.es";
-        private const string _customerNameSurname = "Carlos García López";
-        private const string _deliveryAddress = "Calle Gran Vía 123, Madrid 28013";
+        private const string _customerNameSurname = "Carlos Garcï¿½a Lï¿½pez";
+        private const string _deliveryAddress = "Calle Gran Vï¿½a 123, Madrid 28013";
         //MODIFICACION
-        private const string _invalidAddress = "Gran Vía 123, Madrid 28013";
+        private const string _invalidAddress = "Gran Vï¿½a 123, Madrid 28013";
 
 
 
@@ -46,7 +46,7 @@ namespace AppForSEII2526.UT.RentalsController_test
                 Id = "1",
                 UserName = _userName,
                 CustomerUserName = "Carlos",
-                CustomerUserSurname = "García López",
+                CustomerUserSurname = "Garcï¿½a Lï¿½pez",
                 Email = _userName
             };
 
@@ -99,7 +99,7 @@ namespace AppForSEII2526.UT.RentalsController_test
                 new object[] { rentalApplicationUser, "Error! UserName is not registered" },
                 new object[] { rentalDeviceNotAvailable, "Error! Device Name 'iPhone 15 Pro' is not available for being rented" },
                 //MODIFICACION
-                new object[] { rentalInvalidAddress, "Error en la dirección de envío. Por favor, introduce una dirección válida incluyendo las palabras Calle o Carretera"},
+                new object[] { rentalInvalidAddress, "Error! Invalid delivery address. Please include 'Calle' or 'Carretera' in the address"},
 
             };
 
