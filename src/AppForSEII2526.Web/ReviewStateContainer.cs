@@ -36,7 +36,7 @@ namespace AppForSEII2526.Web
                     Comments = null
                 }
             );
-            
+            NotifyStateChanged();
         } //Agrega la reseña al carrito
 
         
@@ -44,7 +44,7 @@ namespace AppForSEII2526.Web
         public void RemoveReviewItem(ReviewItemDTO item)
         {
             Review.ReviewItems.Remove(item);
-           
+            NotifyStateChanged();
         } //Elimina la reseña del carrito
 
         public void ClearReview()
