@@ -71,6 +71,18 @@ namespace AppForSEII2526.UIT.Shared {
                     .Select(m => m.Text) //we return the text of the row
                     .ToList()[i];
 
+                // --- NUEVO: normalizamos decimales
+                actualRow = actualRow.Replace(",", ".");
+
+                // --- NUEVO: ignoramos columna "Add" tomando solo las primeras 4 columnas
+                var actualColumns = actualRow.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                             .Take(4)
+                                             .ToArray();
+                var expectedColumns = expectedRow.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                                 .Take(4)
+                                                 .ToArray();
+
+
                 if (!actualRow.StartsWith(expectedRow)) {
                     _output.WriteLine($"Error: \n \t expected row:{expectedRow} \n \t actual row:{actualRow}");
                     result = false;

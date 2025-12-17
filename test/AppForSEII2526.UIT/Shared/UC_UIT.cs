@@ -3,6 +3,8 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 
 
+
+
 namespace AppForSEII2526.UT.UIT.Shared {
     public class UC_UIT : IDisposable {
 
@@ -11,6 +13,8 @@ namespace AppForSEII2526.UT.UIT.Shared {
         //establish which browser you would like to use
         private string _browser = "Chrome";
         //private string _browser = "Firefox";
+        
+        //Antes
         //private string _browser = "Edge";
 
         protected IWebDriver _driver;
@@ -20,6 +24,9 @@ namespace AppForSEII2526.UT.UIT.Shared {
         public string _URI {
             get {
                 //set url of your web page 
+                //Antes
+                
+                
                 return "https://localhost:7081/";
 
             }
@@ -103,6 +110,8 @@ namespace AppForSEII2526.UT.UIT.Shared {
             //if (_pipeline) edgeOptions.AddArguments("--headless");
 
             //_driver = new Microsoft.Edge.SeleniumTools.EdgeDriver(edgeDriverService, edgeOptions);
+
+
 
             var optionsEdge = new EdgeOptions {
                 PageLoadStrategy = PageLoadStrategy.Normal,
