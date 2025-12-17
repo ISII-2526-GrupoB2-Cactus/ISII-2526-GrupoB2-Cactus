@@ -64,12 +64,13 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
 
         private void Precondition_perform_login()
         {
-            Perform_login("maria@alu.uclm.es", "Password123!");
+            // Comentado temporalmente - login desactivado para desarrollo
+            // Perform_login("maria@alu.uclm.es", "Password123!");
         }
 
         private void InitialStepsForRentalDevices_UIT()
         {
-            Precondition_perform_login();
+            // Precondition_perform_login(); // Login comentado
             _driver.Navigate().GoToUrl(_URI + "rental/SelectDevicesForRental");
             listDevices.WaitForBeingVisibleIgnoringExeptionTypes(By.Id("searchDevices"));
         }
@@ -202,7 +203,7 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
             listDevices.FilterDevices("", "", from, to);
             listDevices.SelectDevices(new List<string> { deviceName1 });
             listDevices.RentDevices();
-            createRental.FillInRentalInfo(nameSurname, deliveryAddress, "CreditCard");
+            createRental.FillInRentalInfo("maria@alu.uclm.es", nameSurname, deliveryAddress, "CreditCard");
             createRental.PressRentYourDevices();
 
             //Assert
@@ -224,7 +225,7 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
             listDevices.FilterDevices("", "", from, to);
             listDevices.SelectDevices(new List<string> { deviceName1 });
             listDevices.RentDevices();
-            createRental.FillInRentalInfo(nameSurname, deliveryAddress, "CreditCard");
+            createRental.FillInRentalInfo("maria@alu.uclm.es", nameSurname, deliveryAddress, "CreditCard");
             createRental.PressRentYourDevices();
 
             //Assert - Con MinimumLength = 2, nombre de 1 char debe dar error
@@ -246,7 +247,7 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
             listDevices.FilterDevices("", "", from, to);
             listDevices.SelectDevices(new List<string> { deviceName1 });
             listDevices.RentDevices();
-            createRental.FillInRentalInfo(nameSurname, deliveryAddress, "CreditCard");
+            createRental.FillInRentalInfo("maria@alu.uclm.es", nameSurname, deliveryAddress, "CreditCard");
             createRental.PressRentYourDevices();
 
             //Assert - Con MaxLength = 50, nombre > 50 chars debe dar error
@@ -268,7 +269,7 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
             listDevices.FilterDevices("", "", from, to);
             listDevices.SelectDevices(new List<string> { deviceName1 });
             listDevices.RentDevices();
-            createRental.FillInRentalInfo(nameSurname, deliveryAddress, "CreditCard");
+            createRental.FillInRentalInfo("maria@alu.uclm.es", nameSurname, deliveryAddress, "CreditCard");
             createRental.PressRentYourDevices();
 
             //Assert - Con MinimumLength aplicado, dirección corta debe dar error
@@ -337,7 +338,8 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
             listDevices.SelectDevices(new List<string> { deviceName1 });
             listDevices.RentDevices();
 
-            createRental.FillInRentalInfo(nameSurname, deliveryAddress, paymentMethod);
+            // Usar un email válido como CustomerUserName
+            createRental.FillInRentalInfo("maria@alu.uclm.es", nameSurname, deliveryAddress, paymentMethod);
             createRental.PressRentYourDevices();
             createRental.PressOkModalDialog();
 
