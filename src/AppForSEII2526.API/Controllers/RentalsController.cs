@@ -85,7 +85,7 @@ namespace AppForSEII2526.API.Controllers
 
             //MODIFICACION
             if (rentalForCreate.DeliveryAddress != null && !(rentalForCreate.DeliveryAddress.Contains("Calle") || rentalForCreate.DeliveryAddress.Contains("Carretera")) )
-                ModelState.AddModelError("DeliveryAddress", "Error en la dirección de envío. Por favor, introduce una dirección válida incluyendo las palabras Calle o Carretera");
+                ModelState.AddModelError("DeliveryAddress", "Error! Invalid delivery address. Please include 'Calle' or 'Carretera' in the address");
 
 
 
@@ -143,7 +143,13 @@ namespace AppForSEII2526.API.Controllers
 				else
 				{
 
-					rental.RentDevices.Add(new RentDevice(rental.Id, device.Id, device.PriceForRent, item.Quantity));
+					rental.RentDevices.Add(new RentDevice
+					{
+						Rental = rental,
+						DeviceId = device.Id,
+						Price = device.PriceForRent,
+						Quantity = item.Quantity
+					});
 
 					item.PriceForRent = device.PriceForRent;
 				}
@@ -168,8 +174,9 @@ namespace AppForSEII2526.API.Controllers
 			catch (Exception ex)
 			{
 				_logger.LogError(ex.Message);
-				ModelState.AddModelError("Rental", $"Error! There was an error while saving your rental, plese, try again later");
-				return Conflict("Error" + ex.Message);
+				_logger.LogError(ex.InnerException?.Message ?? "No inner exception");
+				ModelState.AddModelError("Rental", $"Error: {ex.Message} - Inner: {ex.InnerException?.Message}");
+				return BadRequest(new ValidationProblemDetails(ModelState));
 			}
 
 
