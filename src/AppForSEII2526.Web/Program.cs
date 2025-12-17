@@ -1,11 +1,38 @@
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using AppForSEII2526.Web;
+using AppForSEII2526.Web.API;
+
+//using AppForSEII2526.Web.API;
 using AppForSEII2526.Web.Components;
 using AppForSEII2526.Web.Components.Account;
 using AppForSEII2526.Web.Data;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar Data Protection para persistir las claves (soluciona el problema de antiforgery token
+// cuando se ejecuta la API y Web por separado)
+var keysFolder = Path.Combine(builder.Environment.ContentRootPath, "keys");
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
+    .SetApplicationName("AppForSEII2526");
+
+// Configurar antiforgery para desarrollo
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.Name = "AppForSEII2526.Antiforgery";
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
+// Configurar Blazor Server con errores detallados
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true;
+    });
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -35,6 +62,19 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+// this variable obtains the url where the API has been deployed
+string? URI2API = builder.Configuration.GetValue(typeof(string), "AppForSEII2526_API") as string;
+builder.Services.AddScoped<AppForSEII2526APIClient>(sp => new AppForSEII2526APIClient(URI2API, new HttpClient()));
+
+//We creare the service for accesing the API from where .WEB project
+//builder.Services.AddScoped<CactusAPIClient>(sp => new CactusAPIClient(URI2API, new HttpClient()));
+//adding an In-memory state container service
+builder.Services.AddSingleton<RentalStateContainer>();
+
+builder.Services.AddSingleton<ReviewStateContainer>();
+
+builder.Services.AddSingleton<PurchaseStateContainer>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -50,6 +90,7 @@ else
 }
 
 app.UseHttpsRedirection();
+
 
 app.UseStaticFiles();
 app.UseAntiforgery();

@@ -1,0 +1,123 @@
+﻿@page "/review/detailReview"
+@using Microsoft.AspNetCore.Authorization
+@using AppForSEII2526.Web.API
+@inject AppForSEII2526APIClient apiclient
+
+<h3>DetailReview</h3>
+
+@*@attribute [Authorize]*@
+
+
+@if (review == null)
+{
+    <p>@error</p>
+}
+else
+{
+    <table class="table table-borderless table-sm">
+        <tr>
+            <th>Nombre del Cliente</th>
+            <td id="CustomerName">@review.CustomerUserName</td>
+        </tr>
+        <tr>
+            <th>País</th>
+            <td id="CustomerCountry">@review.CustomerCountry</td>
+        </tr>
+        <tr>
+            <th>Título de la reseña</th>
+            <td id="ReviewTitle">@review.ReviewTitle</td>
+        </tr>
+        <tr>
+            <th>Fecha de la reseña</th>
+            <td id="ReviewDate">@review.ReviewDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+        </tr>
+        <tr>
+            <th>Puntuación promedio</th>
+            <td id="AverageRating">
+                @for (int i = 0; i < (int)review.AverageRating; i++)
+                {
+                    <span class="text-warning">★</span>
+                }
+                (@review.AverageRating.ToString("F1") / 5)
+            </td>
+        </tr>
+    </table>
+
+    <h4>Dispositivos reseñados</h4>
+
+    <table class="table" id="ReviewedDevices">
+        <thead>
+            <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Modelo</th>
+                <th scope="col">Año</th>
+                <th scope="col">Puntuación</th>
+                <th scope="col">Comentario</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in review.ReviewItems)
+            {
+                <tr id="ReviewItem_@item.Id">
+                    <td>@item.Name</td>
+                    <td>@item.Model</td>
+                    <td>@item.Year</td>
+                    <td>
+                        @for (int i = 0; i < item.Rating; i++)
+                        {
+                            <span class="text-warning">★</span>
+                        }
+                        (@item.Rating / 5)
+                    </td>
+                    <td>@item.Comments</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int ReviewID { get; set; }
+
+    private ReviewDetailDTO? review;
+    private string error = "";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Verificar que el usuario está autenticado
+        string userName = "";
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            // Obtener el nombre del usuario logueado
+            if (user is not null)
+            {
+                if (user.Identity is not null && user.Identity.IsAuthenticated && user.IsInRole("User"))
+                {
+                    userName = user.Identity.Name ?? "";
+                }
+            }
+        }
+
+        try
+        {
+            review = await apiclient.GetReviewAsync(ReviewID);
+        }
+        catch (ApiException ex)
+        {
+            review = null;
+        }
+
+        if ((review == null) || (review.CustomerUserName != userName))
+        {
+            error = $"Error! No está autorizado para ver esta reseña o no existe una reseña con id={ReviewID}";
+        }
+    }
+}

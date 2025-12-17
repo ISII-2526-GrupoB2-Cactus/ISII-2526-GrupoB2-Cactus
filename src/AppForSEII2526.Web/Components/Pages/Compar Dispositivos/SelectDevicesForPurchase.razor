@@ -1,0 +1,198 @@
+﻿@page "/purchase/selectdevicesforpurchase"
+
+@using Microsoft.AspNetCore.Authorization
+@using AppForSEII2526.Web.API
+
+@inject AppForSEII2526APIClient apiclient
+@inject ILogger<SelectDevicesForPurchase> logger
+@inject PurchaseStateContainer purchaseState
+@inject NavigationManager navigation
+
+@attribute [Authorize] 
+
+
+<h3>Select Devices For Purchase</h3>
+
+<div class="container-fluid">
+
+    
+    <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
+        <p id="ErrorsShown">Errors: @errors</p>
+    </div>
+
+    <div class="row">
+
+        
+        <div class="col-8">
+
+            
+            <div class="row">
+
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Name</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Device name"
+                               @bind="deviceName"
+                               id="inputName">
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Color</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Color"
+                               @bind="deviceColor"
+                               id="selectColor">
+                    </div>
+                </div>
+
+                <div class="col">
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="SearchDevices"
+                            id="searchDevices">
+                        Search devices
+                    </button>
+                </div>
+
+            </div>
+
+          
+            <div class="row">
+                @if (devices == null)
+                {
+                    <p>Loading devices...</p>
+                }
+                else
+                {
+                    <div class="mh-100 table-responsive">
+                        <table class="table table-hover" id="TableOfDevices">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Brand</th>
+                                    <th>Model</th>
+                                    <th>Color</th>
+                                    <th>Price</th>
+                                    <th>Add</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var device in devices)
+                                {
+                                    <tr id="DeviceData_@device.Id">
+                                        <td>@device.Name</td>
+                                        <td>@device.Brand</td>
+                                        <td>@device.Model</td>
+                                        <td>@device.Color</td>
+                                        <td>@device.PriceForPurchase €</td>
+                                        <td>
+                                            <button class="btn btn-outline-secondary"
+                                                    id="deviceToPurchase_@device.Id"
+                                                    @onclick="@(() => AddDevice(device))">
+                                                Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+        </div>
+
+        
+        <div class="col-2" hidden="@hidePurchaseCart" id="PurchaseCart">
+
+            <h3>Shopping Cart</h3>
+
+            @foreach (var item in purchase.PurchaseItems)
+            {
+                <div class="row mb-1">
+                    <button type="button"
+                            class="btn btn-light"
+                            id="removeDevice_@item.DeviceID"
+                            @onclick="@(() => RemovePurchaseItem(item))">
+                        @item.Model (x@(item.Quantity)) - @item.PriceForPurchase €
+                    </button>
+                </div>
+            }
+
+            <div class="row mt-3">
+                <button type="button"
+                        class="btn btn-primary"
+                        @onclick="GoToPurchase"
+                        id="purchaseDeviceButton">
+                    Purchase devices
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+@code {
+
+    private string? deviceName;
+    private string? deviceColor;
+
+    private ICollection<DeviceForPurchaseDTO> devices = new List<DeviceForPurchaseDTO>();
+
+
+    private string errors = "";
+    private bool hideErrors => errors.Length == 0;
+
+    
+    private PurchaseForCreateDTO purchase => purchaseState.Purchase;
+
+    private bool hidePurchaseCart => purchase.PurchaseItems.Count == 0;
+
+
+    private void AddDevice(DeviceForPurchaseDTO device)
+    {
+        purchaseState.AddDeviceForPurchase(device);
+    }
+
+    private void RemovePurchaseItem(PurchaseItemDTO item)
+    {
+        purchaseState.RemovePurchaseItem(item);
+    }
+
+    public async void SearchDevices()
+    {
+        try
+        {
+            devices = await apiclient.GetDeviceForPurchaseAsync(deviceName, deviceColor);
+            errors = "";
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError($"{DateTime.Now} Error: {ex}");
+            errors = "Error while connecting to the system";
+            devices = new List<DeviceForPurchaseDTO>(); 
+        }
+
+        StateHasChanged();
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        SearchDevices();
+    }
+
+    private void GoToPurchase()
+    {
+        navigation.NavigateTo("/purchase/createpurchase");
+    }
+}
+
+
+
+
