@@ -44,9 +44,16 @@ switch (connection2Database) {
 //Add Identity services to the container
 builder.Services.AddAuthorization();
 //Activate Identity APIs 
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options => {
+    // Configuración de Identity
+})
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Configurar Antiforgery para desarrollo - permite que funcione cuando API y Web se ejecutan por separado
+builder.Services.AddAntiforgery(options => {
+    options.SuppressXFrameOptionsHeader = true;
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -105,6 +112,7 @@ if (app.Environment.IsDevelopment()) {
         c.DisplayOperationId();
     });
 }
+
 
 app.UseHttpsRedirection();
 
