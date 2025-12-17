@@ -40,11 +40,21 @@ namespace AppForSEII2526.UIT.ReviewDevices
         public void SelectDeviceRating(string rating, int deviceId)
         {
             SelectElement selectElement = new SelectElement(_driver.FindElement(By.Id($"rating_{deviceId}")));
-            selectElement.SelectByText(rating);
+            selectElement.SelectByValue(rating);
+        }
+
+        public void FillInReviewItem(int deviceId, string rating, string comment)
+        {
+            SelectDeviceRating(rating, deviceId);
+            if (!string.IsNullOrEmpty(comment))
+            {
+                FillInDeviceComment(comment, deviceId);
+            }
         }
 
         public void PressPublishReview()
         {
+            WaitForBeingClickable(By.Id("Submit"));
             _submitButton().Click();
         }
 
@@ -60,7 +70,56 @@ namespace AppForSEII2526.UIT.ReviewDevices
 
         public bool CheckValidationError(string expectedError)
         {
-            return _driver.PageSource.Contains(expectedError);
+            System.Threading.Thread.Sleep(2000); // Esperar a que aparezca el error
+            var pageSource = _driver.PageSource;
+            
+            _output?.WriteLine($"[DEBUG] Buscando error: '{expectedError}'");
+            
+            // Buscar el error en el ValidationSummary
+            if (pageSource.Contains(expectedError))
+            {
+                _output?.WriteLine($"[DEBUG] ✓ Error encontrado en PageSource");
+                return true;
+            }
+            
+            // Buscar en el elemento de errores específico
+            try
+            {
+                var errorElement = _driver.FindElement(By.Id("ErrorsShown"));
+                var errorText = errorElement.Text;
+                _output?.WriteLine($"[DEBUG] ErrorsShown text: '{errorText}'");
+                if (errorText.Contains(expectedError))
+                    return true;
+            }
+            catch (Exception ex) 
+            { 
+                _output?.WriteLine($"[DEBUG] ErrorsShown no encontrado: {ex.Message}");
+            }
+            
+            // Buscar en alerts de peligro
+            try
+            {
+                var alerts = _driver.FindElements(By.ClassName("alert-danger"));
+                _output?.WriteLine($"[DEBUG] Found {alerts.Count} alert-danger elements");
+                foreach (var alert in alerts)
+                {
+                    var alertText = alert.Text;
+                    _output?.WriteLine($"[DEBUG] Alert text: '{alertText}'");
+                    if (alertText.Contains(expectedError))
+                        return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _output?.WriteLine($"[DEBUG] Error checking alerts: {ex.Message}");
+            }
+
+            // Print primeras líneas del HTML después del submit para debugging
+            _output?.WriteLine($"[DEBUG] === FULL PAGE SOURCE (primeros 5000 chars) ===");
+            _output?.WriteLine(pageSource.Substring(0, Math.Min(5000, pageSource.Length)));
+            _output?.WriteLine($"[DEBUG] === FIN PAGE SOURCE ===");
+            
+            return false;
         }
 
         public bool CheckPublishButtonDisabled()
