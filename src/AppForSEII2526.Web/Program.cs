@@ -6,10 +6,18 @@ using AppForSEII2526.Web.Components;
 using AppForSEII2526.Web.Components.Account;
 using AppForSEII2526.Web.Data;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar Data Protection para persistir las claves (soluciona el problema de antiforgery token
+// cuando se ejecuta la API y Web por separado)
+var keysFolder = Path.Combine(builder.Environment.ContentRootPath, "keys");
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
+    .SetApplicationName("AppForSEII2526");
 
 // Configurar Blazor Server con errores detallados
 builder.Services.AddServerSideBlazor()
