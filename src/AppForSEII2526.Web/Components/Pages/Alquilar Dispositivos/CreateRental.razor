@@ -4,22 +4,23 @@
 @inject NavigationManager navigation
 
 @using AppForSEII2526.Web.API
+@using AppForSEII2526.Web.Components.Shared
 @using Microsoft.AspNetCore.Authorization
 @inject AppForSEII2526APIClient apiclient
 @inject ILogger<CreateRental> logger
 @inject RentalStateContainer rentalState
 
-@attribute [Authorize]
+@attribute [Authorize] 
+
 
 <h3>Create Rental</h3>
 
 @* rental is the object that will be edited thanks to the form *@
 <EditForm Model="rental" OnValidSubmit="OpenDialog">
-    <div class="row">
-
+    
         <DataAnnotationsValidator />
         <ValidationSummary class="row alert alert-danger" />
-    </div>
+   
     <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
         <p id="ErrorsShown">Errors: @messageError</p>
     </div>
@@ -46,7 +47,6 @@
     <div class="row g-2">
         <div class="col-md">
             <div class="form-floating">
-                @*a dropdown for selecting the payment method*@
                 <InputSelect class="form-select" @bind-Value="@rental.PaymentMethod" id="PaymentMethod">
                     <option value="@PaymentMethodType.CreditCard" default> CreditCard</option>
                     <option value="@PaymentMethodType.PayPal"> PayPal</option>
@@ -57,9 +57,8 @@
         </div>
         <div class="col-md">
             <div class="form-floating">
-                @*this button will be used to ask the user if he want to proceed to rent the devices*@
                 <button class="btn btn-primary" type="submit" id="Submit" disabled="@rentalButtonDisabled">
-                    >
+                    
                     Rent your devices
                 </button>
             </div>
@@ -69,7 +68,7 @@
     <h4>Rental detail</h4>
     <p><b>Date from:</b> @rental.RentalDateFrom.ToString("dd/MM/yyyy") <b>to:</b> @rental.RentalDateTo.ToString("dd/MM/yyyy")</p>
     <p>
-        <b>Total price:</b> @rental.TotalPrice €
+        <b>Total price:</b> @CalculateTotalPrice €
         <button class="btn btn-outline-primary" type="button" @onclick="ModifyRentalItems" id="ModifyDevices">
             Modify devices
         </button>
@@ -102,7 +101,6 @@
     </div>
 </EditForm>
 
-@*a modal popup dialog for checking if user wants to proceed to rent*@
 @if (DialogIsOpen)
 {
     <Dialog Caption="Rental devices"
@@ -128,11 +126,18 @@
     private bool rentalButtonDisabled { get { return (rental.RentalItems == null || rental.RentalItems.Count == 0); } }
     private bool DialogIsOpen;
 
-    private decimal TotalCost
+    private decimal CalculateTotalPrice
     {
         get
         {
+            if (rental.RentalItems == null || rental.RentalItems.Count == 0)
+                return 0;
+
             int days = (rental.RentalDateTo - rental.RentalDateFrom).Days;
+
+            if (days < 1) days = 1;
+
+           
             double price = rental.RentalItems.Sum(ri => ri.PriceForRent * days * ri.Quantity);
             return Convert.ToDecimal(price);
         }
@@ -150,6 +155,7 @@
         DialogIsOpen = true;
     }
 
+    
     private async Task OnDialogClose(bool isOk)
     {
         DialogIsOpen = false;
@@ -160,6 +166,7 @@
             {
                 try
                 {
+
                     var rented = await apiclient.CreateRentalAsync(rental);
                     rentalState.RentalProcessed();
                     navigation.NavigateTo($"/rental/detailrental/?RentalID={rented.Id}");
@@ -171,18 +178,34 @@
                         messageError = "";
                         foreach (var errors in apiexceptionvalidation.Result.Errors.Values)
                             //https://learn.microsoft.com/en-us/dotnet/api/system.string.join?view=net-7.0
-                            messageError = string.Join("(*) ", messageError, string.Join(" (*) ", errors));
+                            messageError = string.Join("() ", messageError, string.Join(" () ", errors));
                     }
                 }
                 catch (ApiException apiexception)
                 {
                     //we need to inform user that there was some other error while processing the request
-                    messageError = "Error while processing your request, please try again later!";
+                    messageError = $"Error: {apiexception.Message} - Status: {apiexception.StatusCode} - Response: {apiexception.Response}";
 
                 }
             }
         }
     }
+    
+    protected override void OnInitialized()
+    {
+        // Inicializar fechas si no tienen valor o tienen valor por defecto
+        if (rental.RentalDateFrom == default || rental.RentalDateFrom.Year < 1900)
+        {
+            rental.RentalDateFrom = DateTimeOffset.Now;
+        }
+
+        if (rental.RentalDateTo == default || rental.RentalDateTo <= rental.RentalDateFrom)
+        {
+            rental.RentalDateTo = rental.RentalDateFrom.AddDays(1);
+        }
+    }
+
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -190,6 +213,8 @@
         {
             var authState = await authenticationState;
             var user = authState?.User;
+            OnInitialized();
+
 
             if (user is not null)
             {

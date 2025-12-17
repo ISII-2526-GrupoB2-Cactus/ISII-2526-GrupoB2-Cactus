@@ -32,7 +32,7 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
 
         [DataType(System.ComponentModel.DataAnnotations.DataType.MultilineText)]
         [Display(Name = "Dirección de entrega")]
-        [StringLength(50, MinimumLength = 10, ErrorMessage = "La dirección debe tener al menos 10 caracteres")]
+        [StringLength(50, MinimumLength = 0)]
         [Required(AllowEmptyStrings = false, ErrorMessage = "Por favor, ingrese su dirección de entrega")]
         public string DeliveryAddress { get; set; }
 
@@ -41,7 +41,7 @@ namespace AppForSEII2526.API.DTOs.RentalDTOs
         public string CustomerUserName { get; set; }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Por favor, ingrese su nombre y apellidos")]
-        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre y apellidos deben tener al menos 2 caracteres")]
+        [StringLength(50, MinimumLength = 0)]
         public string CustomerNameSurname { get; set; }
 
         public IList<RentalItemDTO> RentalItems { get; set; }
