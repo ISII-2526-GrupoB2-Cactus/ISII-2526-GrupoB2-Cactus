@@ -19,6 +19,13 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
     .SetApplicationName("AppForSEII2526");
 
+// Configurar antiforgery para desarrollo
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.Name = "AppForSEII2526.Antiforgery";
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
 // Configurar Blazor Server con errores detallados
 builder.Services.AddServerSideBlazor()
     .AddCircuitOptions(options =>

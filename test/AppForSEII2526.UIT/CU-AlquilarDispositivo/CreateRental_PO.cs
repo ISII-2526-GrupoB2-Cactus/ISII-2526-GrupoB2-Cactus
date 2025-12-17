@@ -15,16 +15,21 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
         private IWebElement _surname() => _driver.FindElement(_surnameBy);
         private IWebElement _deliveryAddress() => _driver.FindElement(By.Id("DeliveryAddress"));
         private IWebElement _paymentMethod() => _driver.FindElement(By.Id("PaymentMethod"));
+        private IWebElement _customerUserName() => _driver.FindElement(By.Id("Name"));
 
         public CreateRental_PO(IWebDriver driver, ITestOutputHelper output)
             : base(driver, output)
         {
         }
 
-        public void FillInRentalInfo(string nameSurname, string deliveryAddress, string paymentMethod)
+        public void FillInRentalInfo(string customerUserName, string nameSurname, string deliveryAddress, string paymentMethod)
         {
             WaitForBeingVisible(_surnameBy);
+            _customerUserName().Clear();
+            _customerUserName().SendKeys(customerUserName);
+            _surname().Clear();
             _surname().SendKeys(nameSurname);
+            _deliveryAddress().Clear();
             _deliveryAddress().SendKeys(deliveryAddress);
 
             //create select element object 
