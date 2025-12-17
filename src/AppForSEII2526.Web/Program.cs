@@ -11,6 +11,14 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar Blazor Server con errores detallados
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true;
+    });
+
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -46,11 +54,11 @@ builder.Services.AddScoped<AppForSEII2526APIClient>(sp => new AppForSEII2526APIC
 //We creare the service for accesing the API from where .WEB project
 //builder.Services.AddScoped<CactusAPIClient>(sp => new CactusAPIClient(URI2API, new HttpClient()));
 //adding an In-memory state container service
-builder.Services.AddScoped<RentalStateContainer>();
+builder.Services.AddSingleton<RentalStateContainer>();
 
-builder.Services.AddScoped<ReviewStateContainer>();
+builder.Services.AddSingleton<ReviewStateContainer>();
 
-builder.Services.AddScoped<PurchaseStateContainer>();
+builder.Services.AddSingleton<PurchaseStateContainer>();
 
 var app = builder.Build();
 
