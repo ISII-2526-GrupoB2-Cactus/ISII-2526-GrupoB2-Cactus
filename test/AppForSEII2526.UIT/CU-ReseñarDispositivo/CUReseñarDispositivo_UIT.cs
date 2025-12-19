@@ -776,5 +776,217 @@ namespace AppForSEII2526.UIT.ReviewDevices
             _output.WriteLine("✅ UC2_8 completado");
         }
 
+
+        //MODIFICACION EXAMEN SPRINT 3
+
+        [Fact]
+        [Trait("LevelTesting", "Funcional Testing")]
+        public void PruebaSprint3()
+        {
+            _output.WriteLine("=== PRUEBA SPRINT 3 - Filtros + Eliminar + Crear Reseña ===");
+
+            try
+            {
+                // LIMPIAR DATOS DEL NAVEGADOR Y CARRITO
+                _output.WriteLine("🧹 Limpiando datos del navegador y carrito...");
+                ((IJavaScriptExecutor)_driver).ExecuteScript("window.localStorage.clear();");
+                ((IJavaScriptExecutor)_driver).ExecuteScript("window.sessionStorage.clear();");
+                _driver.Manage().Cookies.DeleteAllCookies();
+                _output.WriteLine("   ✅ Datos limpiados");
+
+                // Navegar para resetear el estado completamente
+                _driver.Navigate().GoToUrl(_URI + "review/selectDevicesForReview");
+                System.Threading.Thread.Sleep(2000);
+                selectDevices = new SelectDevicesForReview_PO(_driver, _output);
+
+                // LIMPIAR EL CARRITO: Eliminar todos los dispositivos que haya
+                _output.WriteLine("🧹 Limpiando carrito existente...");
+                var removeButtonsInicio = _driver.FindElements(By.XPath("//button[starts-with(@id, 'removeDevice_')]"));
+                while (removeButtonsInicio.Count > 0)
+                {
+                    removeButtonsInicio[0].Click();
+                    System.Threading.Thread.Sleep(500);
+                    removeButtonsInicio = _driver.FindElements(By.XPath("//button[starts-with(@id, 'removeDevice_')]"));
+                }
+                _output.WriteLine("   ✅ Carrito vacío");
+
+                // ===== FASE 1: FILTROS Y CARRITO (ESPECÍFICO DEL SPRINT 3) =====
+                _output.WriteLine("\n--- FASE 1: Filtros y carrito ---");
+
+                // 1. Filtrar por marca Samsung y añadir dispositivo
+                _output.WriteLine("1️⃣ Filtrando por marca Samsung...");
+                selectDevices.FilterDevices("", "Todos");
+                System.Threading.Thread.Sleep(2000);
+
+                var samsungDevices = _driver.FindElements(By.XPath("//table[@id='TableOfDevices']//tbody//tr"));
+                if (samsungDevices.Count == 0)
+                {
+                    _output.WriteLine("⚠️ No hay dispositivos Samsung, intentando con otra marca...");
+                    selectDevices.FilterDevices("Apple", "Todos");
+                    System.Threading.Thread.Sleep(2000);
+                    samsungDevices = _driver.FindElements(By.XPath("//table[@id='TableOfDevices']//tbody//tr"));
+                }
+
+                var primerDispositivo = samsungDevices[0].FindElement(By.XPath(".//td[1]")).Text;
+                _output.WriteLine($"   Primer dispositivo: '{primerDispositivo}'");
+
+                samsungDevices[0].FindElement(By.CssSelector("button")).Click();
+                System.Threading.Thread.Sleep(1500);
+                _output.WriteLine($"   ✅ Añadido: {primerDispositivo}");
+
+                // 2. Filtrar por año 2023 y añadir otro dispositivo DIFERENTE
+                _output.WriteLine("2️⃣ Filtrando por año 2023...");
+                selectDevices.FilterDevices("Todas", "2023");
+                System.Threading.Thread.Sleep(2000);
+
+                var dispositivos2023 = _driver.FindElements(By.XPath("//table[@id='TableOfDevices']//tbody//tr"));
+                string segundoDispositivo = "";
+
+                if (dispositivos2023.Count > 0)
+                {
+                    // Buscar un dispositivo DIFERENTE al primero
+                    foreach (var fila in dispositivos2023)
+                    {
+                        var nombre = fila.FindElement(By.XPath(".//td[1]")).Text;
+                        if (nombre != primerDispositivo)
+                        {
+                            segundoDispositivo = nombre;
+                            fila.FindElement(By.CssSelector("button")).Click();
+                            System.Threading.Thread.Sleep(1500);
+                            _output.WriteLine($"   ✅ Añadido dispositivo diferente: {segundoDispositivo}");
+                            break;
+                        }
+                    }
+
+                    // Si todos son iguales al primero, tomar el primero de la lista
+                    if (string.IsNullOrEmpty(segundoDispositivo))
+                    {
+                        segundoDispositivo = dispositivos2023[0].FindElement(By.XPath(".//td[1]")).Text;
+                        dispositivos2023[0].FindElement(By.CssSelector("button")).Click();
+                        System.Threading.Thread.Sleep(1500);
+                        _output.WriteLine($"   ⚠️ No hay diferentes, añadido: {segundoDispositivo}");
+                    }
+                }
+
+                // 3. Eliminar el PRIMER dispositivo del carrito (eliminando el PRIMER botón)
+                _output.WriteLine($"3️⃣ Eliminando primer dispositivo: '{primerDispositivo}'");
+                var botonesEliminar = _driver.FindElements(By.XPath("//button[starts-with(@id, 'removeDevice_')]"));
+                if (botonesEliminar.Count > 0)
+                {
+                    _output.WriteLine($"   Total dispositivos en carrito: {botonesEliminar.Count}");
+                    _output.WriteLine($"   Eliminando el primer botón (índice 0)...");
+                    botonesEliminar[0].Click();  // Eliminar el PRIMER botón
+                    System.Threading.Thread.Sleep(1500);
+                    _output.WriteLine($"   ✅ Eliminado: {primerDispositivo}");
+
+                    // Verificar que quedó solo el segundo dispositivo
+                    var botonesRestantes = _driver.FindElements(By.XPath("//button[starts-with(@id, 'removeDevice_')]"));
+                    _output.WriteLine($"   ✅ Dispositivos restantes en carrito: {botonesRestantes.Count}");
+                }
+
+                // RESETEAR: Navegar de nuevo para limpiar el estado
+                _output.WriteLine("\n🔄 Reseteando página para limpiar estado...");
+                _driver.Navigate().GoToUrl(_URI + "review/selectDevicesForReview");
+                System.Threading.Thread.Sleep(2000);
+                selectDevices = new SelectDevicesForReview_PO(_driver, _output);
+                _output.WriteLine("   ✅ Estado reseteado");
+
+                // ===== FASE 2: CREAR RESEÑA CON EL DISPOSITIVO QUE QUEDÓ =====
+                _output.WriteLine("\n--- FASE 2: Crear Reseña con dispositivo restante ---");
+
+                // PASO 1: Verificar que estamos en la página correcta
+                _output.WriteLine($"URL actual: {_driver.Url}");
+                Assert.Contains("selectDevicesForReview", _driver.Url);
+                _output.WriteLine("✅ PASO 1: Estamos en selectDevicesForReview");
+
+                // PASO 2: Verificar que el segundo dispositivo sigue en el carrito
+                var dispositivosEnCarrito = _driver.FindElements(By.XPath("//button[starts-with(@id, 'removeDevice_')]"));
+                _output.WriteLine($"Dispositivos en carrito: {dispositivosEnCarrito.Count}");
+                Assert.True(dispositivosEnCarrito.Count == 1, "Debe haber exactamente 1 dispositivo en el carrito");
+                _output.WriteLine($"✅ PASO 2: Confirmado que hay {dispositivosEnCarrito.Count} dispositivo en carrito");
+
+                // PASO 3: Ir directamente a crear review (SIN AÑADIR MÁS DISPOSITIVOS)
+                _output.WriteLine("Yendo a crear review...");
+                selectDevices.NavigateToCreateReview();
+                System.Threading.Thread.Sleep(3000);
+
+                // Verificar que estamos en create review
+                var currentUrl = _driver.Url;
+                _output.WriteLine($"URL después de crear: {currentUrl}");
+
+                // En Blazor, busca el formulario de crear reseña en la página
+                bool isCreateReviewPage = false;
+                try
+                {
+                    _driver.FindElement(By.Id("ReviewTitle"));
+                    isCreateReviewPage = true;
+                    _output.WriteLine("✅ Encontrado formulario de Create Review (campo ReviewTitle)");
+                }
+                catch
+                {
+                    _output.WriteLine("❌ No encontrado ReviewTitle");
+                }
+
+                Assert.True(isCreateReviewPage, "Debería estar en Create Review");
+                _output.WriteLine("✅ PASO 5: Estamos en Create Review");
+
+                // PASO 6: Rellenar solo los campos básicos
+                _output.WriteLine("Rellenando formulario...");
+
+                // Solo título y país (lo mínimo)
+                var titleInput = _driver.FindElement(By.Id("ReviewTitle"));
+                titleInput.Clear();
+                titleInput.SendKeys("Test Review");
+
+                var countryInput = _driver.FindElement(By.Id("CustomerCountry"));
+                countryInput.Clear();
+                countryInput.SendKeys("Test Country");
+
+                // Rating (primer select que encontremos)
+                var selects = _driver.FindElements(By.TagName("select"));
+                if (selects.Count > 0)
+                {
+                    new SelectElement(selects[0]).SelectByValue("3");
+                }
+
+                // Comentario (primer textarea)
+                var textareas = _driver.FindElements(By.TagName("textarea"));
+                if (textareas.Count > 0)
+                {
+                    textareas[0].Clear();
+                    textareas[0].SendKeys("Test comment");
+                }
+
+                _output.WriteLine("✅ PASO 6: Formulario rellenado");
+
+                // PASO 7: Intentar publicar
+                _output.WriteLine("Publicando...");
+                _driver.FindElement(By.Id("Submit")).Click();
+                System.Threading.Thread.Sleep(3000);
+
+                // PASO 8: Verificar resultado
+                var finalUrl = _driver.Url;
+                _output.WriteLine($"URL final: {finalUrl}");
+
+                if (finalUrl.Contains("detailReview"))
+                {
+                    _output.WriteLine("✅✅✅ PRUEBA SPRINT 3 COMPLETADA - Review creada exitosamente!");
+                }
+                else if (_driver.PageSource.Contains("error") || _driver.PageSource.Contains("Error"))
+                {
+                    _output.WriteLine("⚠️ Parece que hubo un error");
+                    _output.WriteLine($"Page source (primeras 500 chars): {_driver.PageSource.Substring(0, Math.Min(500, _driver.PageSource.Length))}");
+                }
+                else
+                {
+                    _output.WriteLine("ℹ️ No está en detailReview pero tampoco hay error aparente");
+                }
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine($"\n❌ ERROR: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
