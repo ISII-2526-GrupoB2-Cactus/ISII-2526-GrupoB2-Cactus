@@ -25,6 +25,11 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
             WaitForBeingVisible(_nameBy);
             WaitForBeingVisible(_surnameBy);
 
+
+
+            _name().Clear();
+            _surname().Clear();
+            _deliveryAddress().Clear();
             _name().SendKeys(name);
             _surname().SendKeys(surname);
             _deliveryAddress().SendKeys(deliveryAddress);
