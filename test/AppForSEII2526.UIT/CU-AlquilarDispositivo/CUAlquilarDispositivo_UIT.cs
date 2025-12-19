@@ -75,7 +75,43 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
             listDevices.WaitForBeingVisibleIgnoringExeptionTypes(By.Id("searchDevices"));
         }
 
-        
+        //MODIFICACION
+        [Fact]
+        [Trait("LevelTesting", "Funcional Testing")]
+        public void sprint3()
+        {
+            //Arrange
+            var from = DateTime.Today.AddDays(1);
+            var to = DateTime.Today.AddDays(2);
+
+            //Act
+            InitialStepsForRentalDevices_UIT();
+
+            //Añadir un elemento
+            listDevices.FilterDevices("", "", from, to);
+            listDevices.SelectDevices(new List<string> { "PlayStation 5" });
+
+
+            //Filtrar y añadir por Modelo
+            listDevices.FilterDevices("iPhone", "", from, to);
+            listDevices.SelectDevices(new List<string> { "iPhone 15" });
+
+            //Eliminar primer elemento
+            listDevices.ModifyRentingCart("PlayStation 5");
+
+            //Crear alquiler
+            listDevices.RentDevices();
+
+            var createRental = new CreateRental_PO(_driver, _output);
+            createRental.FillInRentalInfo("maria@alu.uclm.es", "Maria Martinez Gonzalez", "Calle Libertad 9", "CreditCard");
+            createRental.PressRentYourDevices();
+            createRental.PressOkModalDialog();
+
+            Assert.Contains("detailrenta", _driver.Url);
+
+        }
+
+
         [Theory]
         [InlineData(deviceName1, deviceBrand1, deviceModel1, devicePriceForRenting1, "iPhone", "")]
         [InlineData(deviceName2, deviceBrand2, deviceModel2, devicePriceForRenting2, "", "120,75")] // Filtro por precio
