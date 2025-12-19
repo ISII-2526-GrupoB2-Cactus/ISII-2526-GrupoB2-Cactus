@@ -36,7 +36,7 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
 
         private void Precondition_perform_login()
         {
-            Perform_login("laura@alu.uclm.es", "Password123!");
+            //Perform_login("laura@alu.uclm.es", "Password123!");
         }
 
 
@@ -106,6 +106,73 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
                 "Los dispositivos comprados no son correctos"
             );
         }
+
+
+
+        [Theory]
+        [InlineData("Laura", "Gonzalez Rico", "Calle Angel 1", "CreditCard")]
+        [InlineData("Laura", "Gonzalez Rico", "Calle Angel 1", "PayPal")]
+        [Trait("LevelTesting", "Functional Testing")]
+        public void CP_01_02_FlujoBasicoExamen(string name, string surname, string deliveryAddress, string paymentMethod)
+        {
+
+            var createPurchase = new CreatePurchase_PO(_driver, _output);
+            var detailPurchase = new DetailPurchase_PO(_driver, _output);
+
+            InitialStepsForPurchase();
+
+
+            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId2);
+
+            selectDevicesForPurchase_PO.SearchDevice(deviceName1,"");
+
+            selectDevicesForPurchase_PO.AddDeviceToPurchaseCart(deviceId1);
+
+            selectDevicesForPurchase_PO.RemoveDeviceFromPurchaseCart(deviceId2);
+
+
+
+            _driver.FindElement(By.Id("purchaseDeviceButton")).Click();
+
+
+            createPurchase.FillInPurchaseInfo(
+                name,
+                surname,
+                deliveryAddress,
+                paymentMethod
+            );
+
+
+            createPurchase.PressPurchaseDevices();
+            createPurchase.PressOkModalDialog();
+            
+            
+
+            Assert.True(
+                detailPurchase.CheckPurchaseDetail(name, surname, deliveryAddress, paymentMethod, DateTime.Now, devicePrice1 + " €"),
+                "El detalle de la compra no es correcto"
+            );
+
+
+            var expectedDevices = new List<string[]>
+            {
+                new string[]
+                {
+                    deviceBrand1,
+                    deviceModel1,
+                    deviceColor1,
+                    devicePrice1 + " €",
+                    "1"
+                }
+            };
+
+            Assert.True(
+                detailPurchase.CheckListOfPurchasedDevices(expectedDevices),
+                "Los dispositivos comprados no son correctos"
+            );
+        }
+
+        
 
         [Fact]
         [Trait("LevelTesting", "Functional Testing")]
