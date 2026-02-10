@@ -29,8 +29,8 @@
         </div>
         <div class="col-md">
             <div class="form-floating mb-3">
-                <InputText @bind-Value="review.CustomerCountry" class="form-control" id="CustomerCountry" />
-                <label for="CustomerCountry">Country</label>
+                <InputText @bind-Value="review.CustomerCountry" class="form-control" id="Country" />
+                <label for="Country">Country</label>
             </div>
         </div>
         <div class="col-md">
@@ -76,7 +76,7 @@
                                 <option value="5">5 ★★★★★</option>
                             </InputSelect>
                         </td>
-                        <td><InputTextArea @bind-Value="item.Comments" class="form-control" id="@($"comments_{item.Id}")" /></td>
+                        <td><InputTextArea @bind-Value="item.Comments" class="form-control" id="@($"comentario_{item.Id}")" /></td>
                     </tr>
                 }
             </tbody>

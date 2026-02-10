@@ -1,43 +1,43 @@
-﻿using OpenQA.Selenium.Chrome;
+﻿
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 
 
-
-
-namespace AppForSEII2526.UT.UIT.Shared {
-    public class UC_UIT : IDisposable {
+namespace AppForSEII2526.UIT.Shared
+{
+    public class UC_UIT : IDisposable
+    {
 
         private bool _pipeline = false;
 
         //establish which browser you would like to use
         private string _browser = "Chrome";
         //private string _browser = "Firefox";
-        
-        //Antes
         //private string _browser = "Edge";
 
         protected IWebDriver _driver;
         protected readonly ITestOutputHelper _output;
 
 
-        public string _URI {
-            get {
+        public string _URI
+        {
+            get
+            {
                 //set url of your web page 
-                //Antes
-                
-                
                 return "https://localhost:7081/";
 
             }
         }
 
-        public UC_UIT(ITestOutputHelper output) {
+        public UC_UIT(ITestOutputHelper output)
+        {
 
             //it initializes where the errors will be shown
             _output = output;
 
-            switch (_browser) {
+            switch (_browser)
+            {
                 case "Firefox":
                     SetUp_FireFox4UIT();
                     break;
@@ -57,12 +57,14 @@ namespace AppForSEII2526.UT.UIT.Shared {
         }
 
 
-        protected void Initial_step_opening_the_web_page() {
+        protected void Initial_step_opening_the_web_page()
+        {
             _driver.Navigate()
                 .GoToUrl(_URI);
         }
 
-        protected void Perform_login(string email, string password) {
+        protected void Perform_login(string email, string password)
+        {
             _driver.Navigate()
                     .GoToUrl(_URI + "Account/Login");
             // _driver.FindElement(By.Id("Input_Email"))
@@ -78,8 +80,10 @@ namespace AppForSEII2526.UT.UIT.Shared {
         }
 
 
-        protected void SetUp_Chrome4UIT() {
-            var optionsc = new ChromeOptions {
+        protected void SetUp_Chrome4UIT()
+        {
+            var optionsc = new ChromeOptions
+            {
                 PageLoadStrategy = PageLoadStrategy.Normal,
                 AcceptInsecureCertificates = true
             };
@@ -90,8 +94,10 @@ namespace AppForSEII2526.UT.UIT.Shared {
 
         }
 
-        protected void SetUp_FireFox4UIT() {
-            var optionsff = new FirefoxOptions {
+        protected void SetUp_FireFox4UIT()
+        {
+            var optionsff = new FirefoxOptions
+            {
                 PageLoadStrategy = PageLoadStrategy.Normal,
                 AcceptInsecureCertificates = true
             };
@@ -102,7 +108,8 @@ namespace AppForSEII2526.UT.UIT.Shared {
 
         }
 
-        protected void SetUp_EdgeFor4UIT() {
+        protected void SetUp_EdgeFor4UIT()
+        {
             //var edgeDriverService = Microsoft.Edge.SeleniumTools.EdgeDriverService.CreateChromiumService();
             //var edgeOptions = new Microsoft.Edge.SeleniumTools.EdgeOptions();
             //edgeOptions.PageLoadStrategy = PageLoadStrategy.Normal;
@@ -111,9 +118,8 @@ namespace AppForSEII2526.UT.UIT.Shared {
 
             //_driver = new Microsoft.Edge.SeleniumTools.EdgeDriver(edgeDriverService, edgeOptions);
 
-
-
-            var optionsEdge = new EdgeOptions {
+            var optionsEdge = new EdgeOptions
+            {
                 PageLoadStrategy = PageLoadStrategy.Normal,
                 AcceptInsecureCertificates = true
             };
@@ -126,7 +132,8 @@ namespace AppForSEII2526.UT.UIT.Shared {
         }
 
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _driver.Close();
             _driver.Dispose();
             GC.SuppressFinalize(this);

@@ -1,4 +1,4 @@
-﻿@page "/review/selectDevicesForReview"
+﻿@page "/review/selectdevicesforreview"
 @using Microsoft.AspNetCore.Authorization
 @using AppForSEII2526.Web.API
 @inject AppForSEII2526APIClient apiclient
@@ -21,7 +21,7 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Marca</span>
-                        <select class="form-select" aria-label="Default select" @bind="selectedBrand" id="selectBrand">
+                        <select class="form-select" aria-label="Default select" @bind="selectedBrand" id="inputBrand">
                             <option value="All" selected>Todas</option>
                             @foreach (string brandName in brandsNames)
                             {
@@ -33,7 +33,7 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Año</span>
-                        <select class="form-select" aria-label="Default select" @bind="selectedYear" id="selectYear">
+                        <select class="form-select" aria-label="Default select" @bind="selectedYear" id="inputYear">
                             <option value="0" selected>Todos</option>
                             @foreach (int year in availableYears)
                             {
@@ -92,11 +92,11 @@
             @foreach (ReviewItemDTO item in review.ReviewItems)
             {
                 <div class="row">
-                    <button type="button" class="btn btn-light" id="removeDevice_@item.Id" @onclick="@(() => RemoveReviewItem(item))">x @item.Name</button>
+                    <button type="button" class="btn btn-light" id="removeDevice_@item.Name" @onclick="@(() => RemoveReviewItem(item))">x @item.Name</button>
                 </div>
             }
             <div class="row">
-                <button type="button" class="btn btn-primary" id="createReviewButton" @onclick=@CreateReview>Crear reseña</button>
+                <button type="button" class="btn btn-primary" id="DevicesReviewButton" @onclick=@CreateReview>Crear reseña</button>
             </div>
         </div>
     </div>

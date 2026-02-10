@@ -1,5 +1,5 @@
 -- ======================================
---          ALQUILAR Y RESEÑAR DISPOSITIVOS - CORREGIDO
+--          ALQUILAR Y RESEï¿½AR DISPOSITIVOS - CORREGIDO
 -- ======================================
 
 -- PRIMERO VERIFICAR SI HAY DATOS Y ELIMINAR EN ORDEN CORRECTO
@@ -78,10 +78,10 @@ INSERT INTO RentDevice (RentId, DeviceId, Price, Quantity, RentalId) VALUES
 (3, @Device2, 89.99, 1, 3);
 
 -- ======================================
---          RESEÑAR DISPOSITIVOS - CORREGIDO
+--          RESEï¿½AR DISPOSITIVOS - CORREGIDO
 -- ======================================
 
--- INSERTAR REVIEWS (ApplicationUserId es NULL según tu tabla)
+-- INSERTAR REVIEWS (ApplicationUserId es NULL segï¿½n tu tabla)
 INSERT INTO Review (CustomerId, DateOfReview, OverallRating, ReviewTitle, ApplicationUserId)
 VALUES 
 ('customer1', GETDATE(), 5, 'Excelente experiencia de compra', NULL),
@@ -118,10 +118,10 @@ SELECT Id, NameCustomer, SurnameCustomer, TotalPrice FROM Rental;
 SELECT '=== DISPOSITIVOS ALQUILADOS ===' as Info;
 SELECT RentId, DeviceId, Price, Quantity, RentalId FROM RentDevice;
 
-SELECT '=== RESEÑAS ===' as Info;
+SELECT '=== RESEï¿½AS ===' as Info;
 SELECT ReviewId, CustomerId, OverallRating, ReviewTitle, ApplicationUserId FROM Review;
 
-SELECT '=== ITEMS DE RESEÑAS ===' as Info;
+SELECT '=== ITEMS DE RESEï¿½AS ===' as Info;
 SELECT ReviewId, DeviceId, Comments, Rating FROM ReviewItem;
 
 
