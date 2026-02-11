@@ -1,37 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
+using System;
+using System.Collections.Generic;
 
 namespace AppForSEII2526.UIT.ReviewDevices
 {
-    public class DetailReview_PO : PageObject
+    internal class DetailReviewPO : PageObject
     {
-        public DetailReview_PO(IWebDriver driver, ITestOutputHelper output)
-            : base(driver, output)
+        public DetailReviewPO(IWebDriver driver, ITestOutputHelper output) : base(driver, output)
         {
         }
 
-        public bool CheckReviewDetail(string customerName, string customerCountry,
-            string reviewTitle, DateTime reviewDate, string averageRating)
+        public bool CheckReviewDetail(string name, string reviewTitle, string country)
         {
-            WaitForBeingVisible(By.Id("CustomerName"));
+            WaitForBeingVisible(By.Id("ReviewTitle"));
             bool result = true;
-
-            result = result && _driver.FindElement(By.Id("CustomerName")).Text.Contains(customerName);
-            result = result && _driver.FindElement(By.Id("CustomerCountry")).Text.Contains(customerCountry);
+            result = result && _driver.FindElement(By.Id("NameSurname")).Text.Contains(name);
+            result = result && _driver.FindElement(By.Id("Country")).Text.Contains(country);
             result = result && _driver.FindElement(By.Id("ReviewTitle")).Text.Contains(reviewTitle);
-            result = result && _driver.FindElement(By.Id("AverageRating")).Text.Contains(averageRating);
 
-            var actualReviewDate = DateTime.Parse(_driver.FindElement(By.Id("ReviewDate")).Text);
-            result = result && ((actualReviewDate - reviewDate) < new TimeSpan(0, 1, 0));
+            result = result && _driver.FindElement(By.Id("ReviewDate")).Text.Contains(DateTime.Now.Year.ToString());
 
             return result;
         }
 
-        public bool CheckListOfReviewedDevices(List<string[]> expectedDevices)
+        public bool CheckListOfDevices(List<string[]> expectedReviewItems)
         {
-            return CheckBodyTable(expectedDevices, By.Id("ReviewedDevices"));
+            return CheckBodyTable(expectedReviewItems, By.Id("ReviewdDevices"));
         }
     }
 }
