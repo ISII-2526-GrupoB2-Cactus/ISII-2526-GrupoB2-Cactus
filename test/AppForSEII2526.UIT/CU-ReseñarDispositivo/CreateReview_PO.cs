@@ -98,13 +98,102 @@ namespace AppForSEII2526.UIT.ReviewDevices
         {
             try
             {
-                WaitForBeingClickable(By.Id("Button_DialogOK"));
-                _driver.FindElement(By.Id("Button_DialogOK")).Click();
+                _output.WriteLine($"Esperando modal dialog...");
+                System.Threading.Thread.Sleep(2000);
+
+                // Primero verificar si hay errores visibles
+                try
+                {
+                    var errorsElement = _driver.FindElement(By.Id("ErrorsShown"));
+                    if (errorsElement.Displayed)
+                    {
+                        var errorText = errorsElement.Text;
+                        _output.WriteLine($"✗ Error encontrado en la página: {errorText}");
+                        throw new Exception($"Error en la página antes de hacer click: {errorText}");
+                    }
+                }
+                catch (NoSuchElementException) { }
+
+                // Esperar a que el modal sea clickable (máx 10 segundos con reintentos)
+                bool modalFound = false;
+                for (int i = 0; i < 5; i++)
+                {
+                    try
+                    {
+                        WaitForBeingClickable(By.Id("Button_DialogOK"));
+                        modalFound = true;
+                        _output.WriteLine($"✓ Modal dialog encontrado");
+                        break;
+                    }
+                    catch
+                    {
+                        _output.WriteLine($"⚠ Intento {i + 1}/5 esperando modal...");
+                        System.Threading.Thread.Sleep(2000);
+                    }
+                }
+
+                if (!modalFound)
+                {
+                    _output.WriteLine($"✗ Modal dialog no encontrado después de múltiples intentos");
+                    throw new NoSuchElementException($"Modal dialog con botón 'Button_DialogOK' no encontrado");
+                }
+
+                // Si llegamos aquí, encontramos el modal
+                var okButton = _driver.FindElement(By.Id("Button_DialogOK"));
+                _output.WriteLine($"Haciendo click en Button_DialogOK...");
+                okButton.Click();
+                _output.WriteLine($"✓ Click realizado en Button_DialogOK");
+
+                // Esperar a que la URL cambie (indicando que la navegación se completó)
+                _output.WriteLine($"Esperando navegación a DetailReview...");
+                bool urlCambio = false;
+                string ultimoError = "";
+                
+                for (int i = 0; i < 10; i++)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    var urlActual = _driver.Url;
+                    _output.WriteLine($"  Intento {i + 1}/10. URL: {urlActual}");
+                    
+                    if (urlActual.Contains("detailreview"))
+                    {
+                        _output.WriteLine($"✓ Navegación exitosa a DetailReview");
+                        urlCambio = true;
+                        break;
+                    }
+
+                    // Verificar errores del servidor
+                    try
+                    {
+                        var errorsElement = _driver.FindElement(By.Id("ErrorsShown"));
+                        if (errorsElement.Displayed)
+                        {
+                            ultimoError = errorsElement.Text;
+                            if (i >= 3) // Solo mostrar después del intento 3 para evitar spam
+                            {
+                                _output.WriteLine($"⚠ Error en página: {ultimoError}");
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
+                if (!urlCambio)
+                {
+                    _output.WriteLine($"✗ URL no cambió. URL final: {_driver.Url}");
+                    if (!string.IsNullOrEmpty(ultimoError))
+                    {
+                        throw new Exception($"No se pudo navegar a DetailReview. Error del servidor: {ultimoError}");
+                    }
+                    else
+                    {
+                        throw new Exception($"No se pudo navegar a DetailReview. La URL sigue siendo: {_driver.Url}");
+                    }
+                }
             }
-            catch (NoSuchElementException ex)
+            catch (Exception ex)
             {
-                _output.WriteLine($"Error: No se encontró el botón Button_DialogOK");
-                _output.WriteLine($"Detalles: {ex.Message}");
+                _output.WriteLine($"Error en PressOkModalDialog: {ex.Message}");
                 throw;
             }
         }

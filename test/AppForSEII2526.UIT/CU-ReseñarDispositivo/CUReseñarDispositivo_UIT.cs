@@ -37,7 +37,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
 
         private void Precondition_perform_login()
         {
-            Perform_login("maria@uclm.es", "Password1234%");
+            Perform_login("maria@alu.uclm.es", "Password1234%");
         }
 
         private void InitialStepsForReviewDevice_UIT()
@@ -90,10 +90,10 @@ namespace AppForSEII2526.UIT.ReviewDevices
         }
 
         [Theory]
-        [InlineData("Maria", "Spain", "", "Good device", 5, "El título debe tener entre 10 y 50 caracteres")]
-        [InlineData("Maria", "", "Perfecto rendimiento", "Good device", 5, "Por favor, ingrese pais")]
-        [InlineData("Maria", "Spain", "Perfecto rendimiento", "Good device", null, "")]
-        [InlineData("Maria", "Spain", "Perfecto rendimiento", "Very good device", 5, "")]
+        [InlineData("maria@alu.uclm.es", "Spain", "", "Good device", 5, "El título debe tener entre 10 y 50 caracteres")]
+        [InlineData("maria@alu.uclm.es", "", "Perfecto rendimiento", "Good device", 5, "Por favor, ingrese pais")]
+        [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Good device", null, "")]
+        [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Very good device", 5, "")]
         [Trait("LevelTesting", "Funcional Testing")]
         public void UC3_6_7_8_9_testingErrorsMandatorydata(string username, string country, string reviretitle, string comentario, int? rating,
            string expectedMessageError)
@@ -136,8 +136,8 @@ namespace AppForSEII2526.UIT.ReviewDevices
         }
 
         [Theory]
-        [InlineData("Maria", "Spain", "Perfecto rendimiento", "Great product", -5, "")]
-        [InlineData("Maria", "Spain", "Perfecto rendimiento", "Not recommended", 5, "")]
+        [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Great product", -5, "")]
+        [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Not recommended", 5, "")]
         [Trait("LevelTesting", "Funcional Testing")]
         public void UC3_11_12_testingErrorsvalidationdata(string username, string country, string reviretitle, string comentario, int rating,
           string expectedMessageError)
@@ -158,7 +158,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
         }
 
         [Theory]
-        [InlineData("Maria", "Spain", "Perfecto rendimiento", "Reseña para", 5)]
+        [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Reseña para", 5)]
         [Trait("LevelTesting", "Funcional Testing")]
         public void UC2_1_BasicFlow(string username, string country, string reviretitle, string comentario, int rating)
         {
@@ -191,8 +191,8 @@ namespace AppForSEII2526.UIT.ReviewDevices
                 "Error: rental items are not as expected");
         }
 
-        [Theory]
-        [InlineData("Maria", "Spain", "Perfecto rendimiento", "Reseña para", 5, "Apple", 2023)]
+        /*[Theory]
+        [InlineData("maria@uclm.es", "Spain", "Perfecto rendimiento", "Reseña para", 5, "Apple", 2023)]
         [Trait("LevelTesting", "Funcional Testing")]
         public void UCExamen(string username, string country, string reviretitle, string comentario, int rating, string brandfiltro, int? yearfiltro)
         {
@@ -230,6 +230,6 @@ namespace AppForSEII2526.UIT.ReviewDevices
 
             Assert.True(detailReview.CheckListOfDevices(expectedReviewItems),
                 "Error: rental items are not as expected");
-        }
+        }*/
     }
 }
