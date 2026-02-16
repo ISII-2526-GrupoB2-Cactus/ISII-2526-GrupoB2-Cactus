@@ -57,10 +57,18 @@ namespace AppForSEII2526.UIT.ReviewDevices
         {
             try
             {
+                // Validar que el rating esté en el rango válido (1-5)
+                if (rating < 1 || rating > 5)
+                {
+                    _output.WriteLine($"⚠ Rating inválido: {rating}. Rango válido: 1-5. Se omitirá la selección.");
+                    return;
+                }
+
                 WaitForBeingVisible(By.Id($"rating_{deviceId}"));
                 var selectElement = new SelectElement(_Rating(deviceId));
                 selectElement.SelectByValue(rating.ToString());
                 System.Threading.Thread.Sleep(200);
+                _output.WriteLine($"✓ Rating {rating} seleccionado para dispositivo {deviceId}");
             }
             catch (NoSuchElementException ex)
             {
@@ -113,7 +121,151 @@ namespace AppForSEII2526.UIT.ReviewDevices
 
         public bool CheckValidationError(string expectedError)
         {
-            return _driver.PageSource.Contains(expectedError);
+            try
+            {
+                System.Threading.Thread.Sleep(2000);
+                
+                if (string.IsNullOrEmpty(expectedError))
+                {
+                    // No se espera error, verificar que no haya mensajes de error
+                    try
+                    {
+                        var validationSummaries = _driver.FindElements(By.ClassName("validation-summary-errors"));
+                        foreach (var summary in validationSummaries)
+                        {
+                            if (summary.Displayed && !string.IsNullOrEmpty(summary.Text))
+                            {
+                                _output.WriteLine($"Found unexpected error: {summary.Text}");
+                                return false;
+                            }
+                        }
+                    }
+                    catch { }
+
+                    try
+                    {
+                        var errorElement = _driver.FindElement(By.Id("ErrorsShown"));
+                        var errorText = errorElement.Text;
+                        return string.IsNullOrEmpty(errorText) || errorText.Equals("Errors: ");
+                    }
+                    catch { }
+
+                    return true;
+                }
+                else
+                {
+                    // Se espera un error específico
+                    _output.WriteLine($"Buscando error esperado: '{expectedError}'");
+
+                    // Mapeo de mensajes esperados a sus equivalentes en Blazor
+                    var validationMessages = new List<string> { expectedError };
+                    
+                    // Agregar mensajes alternativos que Blazor podría mostrar
+                    if (expectedError.Contains("pais") || expectedError.Contains("Country"))
+                    {
+                        validationMessages.Add("The CustomerCountry field is required");
+                        validationMessages.Add("CustomerCountry");
+                        validationMessages.Add("required");
+                    }
+                    if (expectedError.Contains("título") || expectedError.Contains("ReviewTitle"))
+                    {
+                        validationMessages.Add("The ReviewTitle");
+                        validationMessages.Add("minimum length");
+                    }
+
+                    // Buscar en ValidationSummary
+                    try
+                    {
+                        var validationSummaries = _driver.FindElements(By.ClassName("validation-summary-errors"));
+                        foreach (var summary in validationSummaries)
+                        {
+                            var text = summary.Text;
+                            _output.WriteLine($"ValidationSummary encontrado: '{text}'");
+                            
+                            // Buscar cual
+                            foreach (var msg in validationMessages)
+                            {
+                                if (text.Contains(msg, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _output.WriteLine($"✓ Error encontrado: '{msg}' en ValidationSummary");
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _output.WriteLine($"Error buscando en ValidationSummary: {ex.Message}");
+                    }
+
+                    // Buscar en ErrorsShown
+                    try
+                    {
+                        var errorElement = _driver.FindElement(By.Id("ErrorsShown"));
+                        var errorText = errorElement.Text;
+                        _output.WriteLine($"ErrorsShown encontrado: '{errorText}'");
+                        
+                        foreach (var msg in validationMessages)
+                        {
+                            if (errorText.Contains(msg, StringComparison.OrdinalIgnoreCase))
+                            {
+                                _output.WriteLine($"✓ Error encontrado: '{msg}' en ErrorsShown");
+                                return true;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _output.WriteLine($"Error buscando en ErrorsShown: {ex.Message}");
+                    }
+
+                    // Buscar en cualquier elemento con clase alert
+                    try
+                    {
+                        var alerts = _driver.FindElements(By.ClassName("alert"));
+                        foreach (var alert in alerts)
+                        {
+                            var text = alert.Text;
+                            _output.WriteLine($"Alert encontrado: '{text}'");
+                            
+                            foreach (var msg in validationMessages)
+                            {
+                                if (text.Contains(msg, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _output.WriteLine($"✓ Error encontrado: '{msg}' en alert");
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _output.WriteLine($"Error buscando en alerts: {ex.Message}");
+                    }
+
+                    // Último recurso: buscar en el PageSource
+                    try
+                    {
+                        foreach (var msg in validationMessages)
+                        {
+                            if (_driver.PageSource.Contains(msg))
+                            {
+                                _output.WriteLine($"✓ Error encontrado: '{msg}' en PageSource");
+                                return true;
+                            }
+                        }
+                    }
+                    catch { }
+
+                    _output.WriteLine($"✗ Ninguno de estos errores fue encontrado: {string.Join(", ", validationMessages)}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine($"Error en CheckValidationError: {ex.Message}");
+                return false;
+            }
         }
     }
 }

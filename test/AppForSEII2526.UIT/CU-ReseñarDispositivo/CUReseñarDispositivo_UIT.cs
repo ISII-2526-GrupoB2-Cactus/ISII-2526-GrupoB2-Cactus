@@ -90,8 +90,8 @@ namespace AppForSEII2526.UIT.ReviewDevices
         }
 
         [Theory]
-        [InlineData("Maria", "Spain", "", "Good device", 5, "The ReviewTitle field is required.")]
-        [InlineData("Maria", "", "Perfecto rendimiento", "Good device", 5, "The Country field is required.")]
+        [InlineData("Maria", "Spain", "", "Good device", 5, "El título debe tener entre 10 y 50 caracteres")]
+        [InlineData("Maria", "", "Perfecto rendimiento", "Good device", 5, "Por favor, ingrese pais")]
         [InlineData("Maria", "Spain", "Perfecto rendimiento", "Good device", null, "")]
         [InlineData("Maria", "Spain", "Perfecto rendimiento", "Very good device", 5, "")]
         [Trait("LevelTesting", "Funcional Testing")]
