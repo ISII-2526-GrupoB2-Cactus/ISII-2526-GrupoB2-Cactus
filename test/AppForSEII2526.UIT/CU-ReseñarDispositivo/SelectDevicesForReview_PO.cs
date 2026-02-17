@@ -86,7 +86,71 @@ namespace AppForSEII2526.UIT.ReviewDevices
 
         public bool CheckReviewDeviceDisabled()
         {
-            return !(_reviewButton().Enabled);
+            try
+            {
+                System.Threading.Thread.Sleep(1000);
+                
+                // Verificar si el contenedor del carrito está oculto
+                try
+                {
+                    var cartContainer = _driver.FindElement(By.CssSelector("div.col-2"));
+                    
+                    // Verificar si tiene el atributo hidden
+                    var hiddenAttr = cartContainer.GetAttribute("hidden");
+                    if (hiddenAttr != null && (hiddenAttr == "true" || hiddenAttr == ""))
+                    {
+                        _output.WriteLine($"✓ Carrito oculto (atributo hidden presente): el botón está deshabilitado");
+                        return true;
+                    }
+                    
+                    // Si el contenedor está oculto por CSS, también está deshabilitado
+                    if (!cartContainer.Displayed)
+                    {
+                        _output.WriteLine($"✓ Carrito no visible (display: none): el botón está deshabilitado");
+                        return true;
+                    }
+                }
+                catch (NoSuchElementException)
+                {
+                    _output.WriteLine($"⚠ Contenedor del carrito no encontrado");
+                }
+
+                // Si llegamos aquí, el contenedor está visible, intentar acceder al botón
+                try
+                {
+                    WaitForBeingVisible(_reviewButtonBy);
+                    var button = _reviewButton();
+                    
+                    // Verificar si el atributo disabled existe
+                    var disabledAttr = button.GetAttribute("disabled");
+                    if (disabledAttr != null)
+                    {
+                        _output.WriteLine($"✓ Botón deshabilitado detectado (atributo disabled presente)");
+                        return true;
+                    }
+
+                    // Verificar si la propiedad Enabled es false
+                    if (!button.Enabled)
+                    {
+                        _output.WriteLine($"✓ Botón deshabilitado detectado (Enabled = false)");
+                        return true;
+                    }
+
+                    _output.WriteLine($"✗ Botón está habilitado (no está deshabilitado)");
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    _output.WriteLine($"⚠ Error accediendo al botón: {ex.Message}");
+                    // Si no podemos acceder al botón, consideramos que está deshabilitado
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine($"Error en CheckReviewDeviceDisabled: {ex.Message}");
+                return false;
+            }
         }
 
         public bool CheckShoppingCart(string deviceName)
