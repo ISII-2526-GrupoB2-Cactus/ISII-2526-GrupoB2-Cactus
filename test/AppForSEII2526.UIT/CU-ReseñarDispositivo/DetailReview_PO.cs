@@ -18,7 +18,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
             {
                 // Esperar a que la página se navegue completamente
                 System.Threading.Thread.Sleep(3000);
-                
+
                 _output.WriteLine($"URL actual: {_driver.Url}");
                 _output.WriteLine($"Esperando elemento ReviewTitle...");
 
@@ -39,9 +39,9 @@ namespace AppForSEII2526.UIT.ReviewDevices
                         System.Threading.Thread.Sleep(1000);
                     }
                 }
-                
+
                 System.Threading.Thread.Sleep(2000);
-                
+
                 // Verificar si hay un mensaje de error
                 try
                 {
@@ -195,7 +195,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
             try
             {
                 WaitForBeingVisible(By.Id("ReviewdDevices"));
-                
+
                 var table = _driver.FindElement(By.Id("ReviewdDevices"));
                 var tbody = table.FindElement(By.TagName("tbody"));
                 var rows = tbody.FindElements(By.TagName("tr")).ToList();
@@ -211,7 +211,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
                 for (int i = 0; i < rows.Count; i++)
                 {
                     var cells = rows[i].FindElements(By.TagName("td")).ToList();
-                    
+
                     // Esperamos: [Nombre, Modelo, Año, Rating, Comentario]
                     if (cells.Count < 5)
                     {
@@ -273,6 +273,27 @@ namespace AppForSEII2526.UIT.ReviewDevices
                 _output.WriteLine($"✗ Error en CheckListOfDevices: {ex.Message}");
                 return false;
             }
+        }
+        public bool CheckCompleteReview(string name, string reviewTitle, string country, List<string[]> expectedReviewItems)
+        {
+            _output.WriteLine("\n=== Verificando Reseña Completa ===");
+
+            bool detailsOk = CheckReviewDetail(name, reviewTitle, country); //Mira que el nombre, país y título de la reseña sean correctos
+            if (!detailsOk)
+            {
+                _output.WriteLine($"✗ Error en detalles de la reseña"); //Si no estan bien error
+                return false;
+            }
+
+            bool itemsOk = CheckListOfDevices(expectedReviewItems);
+            if (!itemsOk)
+            {
+                _output.WriteLine($"✗ Error en items de la reseña");
+                return false;
+            }
+
+            _output.WriteLine($"✓ RESEÑA COMPLETA VERIFICADA CORRECTAMENTE");
+            return true;
         }
     }
 }
