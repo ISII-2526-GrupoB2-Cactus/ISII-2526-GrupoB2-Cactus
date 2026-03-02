@@ -259,5 +259,12 @@ namespace AppForSEII2526.UIT.ReviewDevices
                 "Error: la reseña no se creó correctamente con todos los datos esperados");
             //El metodo CheckCompleteReview mira que los datos introducidos se hayan guardado bien y sean correctos 
         }
+
+
+       
+
+
+
     }
 }
+    
