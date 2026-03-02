@@ -231,5 +231,33 @@ namespace AppForSEII2526.UIT.ReviewDevices
             Assert.True(detailReview.CheckListOfDevices(expectedReviewItems),
                 "Error: rental items are not as expected");
         }*/
+
+        
+        [Theory]
+        [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Reseña para", 5)]
+        [Trait("LevelTesting", "Funcional Testing")]
+        public void UC2_2_BasicFlowOptizado(string username, string country, string reviretitle, string comentario, int rating)
+        {
+            var createreview = new CreateReviewPO(_driver, _output); //Crea la reseña
+            var detailReview = new DetailReviewPO(_driver, _output); //Mira que se creo bien 
+
+            InitialStepsForReviewDevice_UIT(); //Inicializa la pagina
+            selectDevices.SelectDevices(new List<string> { deviceId1.ToString() }); //Selecciona el primer dispositivo
+            selectDevices.ReviewDevices(); //Se va a crear la reseña 
+            createreview.FillInReviewInfo(reviretitle, username, country);
+            createreview.AddDeviceReviewComent(deviceId1, comentario);
+            createreview.AddDeviceReviewRating(deviceId1, rating); //Rellena la reseña
+            createreview.PressReviewYourDevices(); //La crea 
+            createreview.PressOkModalDialog(); //Le da a aceptar 
+
+            var expectedReviewItems = new List<string[]>
+            {
+                new string[] { deviceName1, deviceModel1, deviceYear1.ToString(), devicerating1.ToString(), devicecomentario1 }
+            };//Espera que salga iPhone 15", "iPhone 15", "2023", "5", "Reseña para
+
+            Assert.True(detailReview.CheckCompleteReview(username, reviretitle, country, expectedReviewItems),
+                "Error: la reseña no se creó correctamente con todos los datos esperados");
+            //El metodo CheckCompleteReview mira que los datos introducidos se hayan guardado bien y sean correctos 
+        }
     }
 }
