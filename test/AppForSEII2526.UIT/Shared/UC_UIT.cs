@@ -12,9 +12,9 @@ namespace AppForSEII2526.UIT.Shared
         private bool _pipeline = false;
 
         //establish which browser you would like to use
-        private string _browser = "Chrome";
+        //private string _browser = "Chrome";
         //private string _browser = "Firefox";
-        //private string _browser = "Edge";
+        private string _browser = "Edge";
 
         protected IWebDriver _driver;
         protected readonly ITestOutputHelper _output;

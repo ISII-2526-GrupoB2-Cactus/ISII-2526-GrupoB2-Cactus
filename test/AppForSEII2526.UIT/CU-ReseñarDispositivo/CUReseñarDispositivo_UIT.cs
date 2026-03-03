@@ -33,6 +33,13 @@ namespace AppForSEII2526.UIT.ReviewDevices
         private const int deviceYear2 = 2023;
         private const string deviceModel2 = "Galaxy S23";
 
+
+        private const int deviceId3 = 2;
+        private const string deviceName3 = "Galaxy S23";
+        private const string deviceColor3 = "Gris";
+        private const string deviceBrand3 = "Samsung";
+        private const int deviceYear3 = 2023;
+        private const string deviceModel3 = "Galaxy S23";
         private SelectDevicesForReviewPO selectDevices;
 
         private void Precondition_perform_login()
@@ -259,5 +266,47 @@ namespace AppForSEII2526.UIT.ReviewDevices
                 "Error: la reseña no se creó correctamente con todos los datos esperados");
             //El metodo CheckCompleteReview mira que los datos introducidos se hayan guardado bien y sean correctos 
         }
+
+        [Theory]
+        [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Reseña para", 5)]
+        [Trait("LevelTesting", "Funcional Testing")]
+        public void UC_ExamenNuestro(string username, string country, string reviewTitle, string comentario, int rating)
+        {
+            var createreview = new CreateReviewPO(_driver, _output);
+            var detailReview = new DetailReviewPO(_driver, _output);
+            //Filtro por uno, añado, filtro por otro, añado y borro el primero
+
+            InitialStepsForReviewDevice_UIT();
+
+            //Filtro por el primero
+            selectDevices.SearchDevices(deviceBrand3, 0);
+            selectDevices.SelectDevices(new List<string> { deviceId3.ToString() }); //Añado dispositivo
+
+            
+            //Filtro por el segundo
+            selectDevices.SearchDevices(null, deviceYear1);
+            selectDevices.SelectDevices(new List<string> { deviceId1.ToString() }); //Añado dispositivo
+
+            selectDevices.SearchDevices(null, 0);
+            selectDevices.SelectDevices(new List<string> { deviceId2.ToString() }); //Añado dispositivo
+
+            selectDevices.ModifyReviewCart(deviceName3); //Borro el primero
+            selectDevices.ModifyReviewCart(deviceName1); //Borro el segundo
+
+            selectDevices.ReviewDevices(); //Y ya termino con el flujo basico 
+
+            createreview.FillInReviewInfo(reviewTitle, username, country);
+            createreview.AddDeviceReviewComent(deviceId1, comentario);
+            createreview.AddDeviceReviewRating(deviceId1, rating);
+            createreview.PressReviewYourDevices();
+            createreview.PressOkModalDialog();
+
+            var expectedReviewItems = new List<string[]> { new string[] { deviceName1, deviceModel1, deviceYear1.ToString(), rating.ToString(), comentario } };
+
+            Assert.True(detailReview.CheckCompleteReview(username, reviewTitle, country, expectedReviewItems),
+                "Error: la reseña no contiene únicamente el segundo dispositivo tras eliminar el primero.");
+        }
+
+
     }
 }
