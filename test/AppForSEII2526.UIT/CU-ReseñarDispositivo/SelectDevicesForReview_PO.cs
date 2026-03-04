@@ -91,6 +91,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
         }
 
 
+
         public void SelectDevices(List<string> deviceids)
         {
             foreach (var deviceId in deviceids)

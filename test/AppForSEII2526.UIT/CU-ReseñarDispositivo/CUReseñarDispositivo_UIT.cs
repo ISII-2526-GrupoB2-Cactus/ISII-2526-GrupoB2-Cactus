@@ -197,48 +197,6 @@ namespace AppForSEII2526.UIT.ReviewDevices
             Assert.True(detailReview.CheckListOfDevices(expectedReviewItems),
                 "Error: rental items are not as expected");
         }
-
-        /*[Theory]
-        [InlineData("maria@uclm.es", "Spain", "Perfecto rendimiento", "Reseña para", 5, "Apple", 2023)]
-        [Trait("LevelTesting", "Funcional Testing")]
-        public void UCExamen(string username, string country, string reviretitle, string comentario, int rating, string brandfiltro, int? yearfiltro)
-        {
-            var createreview = new CreateReviewPO(_driver, _output);
-            var detailReview = new DetailReviewPO(_driver, _output);
-
-            InitialStepsForReviewDevice_UIT();
-            selectDevices.SelectDevices(new List<string> { deviceId2.ToString() });
-            Thread.Sleep(500);
-            selectDevices.SearchDevices(brandfiltro, yearfiltro ?? 0);
-            selectDevices.Boraranio();
-            Thread.Sleep(1000);
-            selectDevices.SelectDevices(new List<string> { deviceId1.ToString() });
-            Thread.Sleep(500);
-            selectDevices.ModifyReviewCart(deviceName2);
-            selectDevices.ReviewDevices();
-            createreview.FillInReviewInfo(reviretitle, username, country);
-            Thread.Sleep(500);
-            createreview.AddDeviceReviewComent(deviceId1, comentario);
-            Thread.Sleep(1000);
-            createreview.AddDeviceReviewRating(deviceId1, rating);
-            Thread.Sleep(1000);
-            createreview.PressReviewYourDevices();
-            Thread.Sleep(500);
-            createreview.PressOkModalDialog();
-            Thread.Sleep(500);
-
-            Assert.True(detailReview.CheckReviewDetail(username, reviretitle, country),
-                "Error: detail review is not as expected");
-
-            var expectedReviewItems = new List<string[]>
-            {
-                new string[] { deviceName1, deviceModel1, deviceYear1.ToString(), devicerating1.ToString(), devicecomentario1 }
-            };
-
-            Assert.True(detailReview.CheckListOfDevices(expectedReviewItems),
-                "Error: rental items are not as expected");
-        }*/
-
         
         [Theory]
         [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Reseña para", 5)]
@@ -267,10 +225,11 @@ namespace AppForSEII2526.UIT.ReviewDevices
             //El metodo CheckCompleteReview mira que los datos introducidos se hayan guardado bien y sean correctos 
         }
 
+
         [Theory]
         [InlineData("maria@alu.uclm.es", "Spain", "Perfecto rendimiento", "Reseña para", 5)]
         [Trait("LevelTesting", "Funcional Testing")]
-        public void UC_ExamenNuestro(string username, string country, string reviewTitle, string comentario, int rating)
+        public void UC_ExamenMarzo(string username, string country, string reviewTitle, string comentario, int rating)
         {
             var createreview = new CreateReviewPO(_driver, _output);
             var detailReview = new DetailReviewPO(_driver, _output);
@@ -282,7 +241,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
             selectDevices.SearchDevices(deviceBrand3, 0);
             selectDevices.SelectDevices(new List<string> { deviceId3.ToString() }); //Añado dispositivo
 
-            
+
             //Filtro por el segundo
             selectDevices.SearchDevices(null, deviceYear1);
             selectDevices.SelectDevices(new List<string> { deviceId1.ToString() }); //Añado dispositivo
@@ -293,7 +252,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
             selectDevices.ModifyReviewCart(deviceName3); //Borro el primero
             selectDevices.ModifyReviewCart(deviceName1); //Borro el segundo
 
-            selectDevices.ReviewDevices(); //Y ya termino con el flujo basico 
+            selectDevices.ReviewDevices(); //Y ya termino con el flujo basico
 
             createreview.FillInReviewInfo(reviewTitle, username, country);
             createreview.AddDeviceReviewComent(deviceId1, comentario);
@@ -306,6 +265,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
             Assert.True(detailReview.CheckCompleteReview(username, reviewTitle, country, expectedReviewItems),
                 "Error: la reseña no contiene únicamente el segundo dispositivo tras eliminar el primero.");
         }
+
 
 
     }
