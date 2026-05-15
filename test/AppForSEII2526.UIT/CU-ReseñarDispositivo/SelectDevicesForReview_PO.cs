@@ -31,24 +31,66 @@ namespace AppForSEII2526.UIT.ReviewDevices
         public void SearchDevices(string brand, int year)
         {
             WaitForBeingVisible(inputBrand);
+            System.Threading.Thread.Sleep(1000); // Esperar a que las opciones se carguen
+
+            // PRIMERO: Resetear AMBOS filtros a su estado inicial
+            var brandElement = _deviceBrand();
+            var brandSelect = new SelectElement(brandElement);
+
+            // Esperar a que haya opciones disponibles
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            wait.Until(driver => brandSelect.Options.Count > 0);
+
+            // Resetear marca a la primera opción
+            brandSelect.SelectByIndex(0);
+
+            // Resetear año a la primera opción (valor por defecto)
+            WaitForBeingVisible(inputYear);
+            var yearElement = _deviceYear();
+            var yearSelect = new SelectElement(yearElement);
+            yearSelect.SelectByIndex(0);
+
+            // Hacer click en buscar para aplicar el reset
+            _driver.FindElement(searchDevices).Click();
+            System.Threading.Thread.Sleep(1000);
+
+            // SEGUNDO: Aplicar los nuevos filtros si se proporcionan
             if (!string.IsNullOrEmpty(brand) && brand != "All")
             {
-                var brandSelect = new SelectElement(_deviceBrand());
-                brandSelect.SelectByValue(brand);
+                WaitForBeingVisible(inputBrand);
+                brandElement = _deviceBrand();
+                brandSelect = new SelectElement(brandElement);
+
+                try
+                {
+                    brandSelect.SelectByValue(brand);
+                }
+                catch (NoSuchElementException)
+                {
+                    // Si no encuentra por valor, intentar por texto
+                    _output.WriteLine($"⚠️ No se encontró opción con valor '{brand}', intentando por texto...");
+                    brandSelect.SelectByText(brand);
+                }
+
+                _driver.FindElement(searchDevices).Click();
+                System.Threading.Thread.Sleep(500);
             }
-            _driver.FindElement(searchDevices).Click();
-            System.Threading.Thread.Sleep(500);
 
             if (year != 0)
             {
                 WaitForBeingVisible(inputYear);
-                var yearSelect = new SelectElement(_deviceYear());
+                System.Threading.Thread.Sleep(500);
+                yearElement = _deviceYear();
+                yearSelect = new SelectElement(yearElement);
                 yearSelect.SelectByValue(year.ToString());
                 _driver.FindElement(searchDevices).Click();
+                System.Threading.Thread.Sleep(500);
             }
 
             System.Threading.Thread.Sleep(2000);
         }
+
+
 
         public void SelectDevices(List<string> deviceids)
         {
