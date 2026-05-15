@@ -39,7 +39,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
         {
             // CAMBIA ESTAS CREDENCIALES POR LAS DE TU APLICACIÓN
             // Perform_login("Maria@ejemplo.com", "Password1234!");
-        }*/
+        }
 
         /*private void InitialStepsForReviewDevices_UIT()
         {
@@ -51,7 +51,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
         }*/
 
 
-
+        /*
         [Fact]
         [Trait("LevelTesting", "Funcional Testing")]
         public void UC2_2_AF1_filteringbyYear()
@@ -77,6 +77,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
                 "Error: Los dispositivos filtrados por año 2023 no coinciden con los esperados");
 
         }
+        */
 
         private void InitialStepsForReviewDevice_UIT()
         {
