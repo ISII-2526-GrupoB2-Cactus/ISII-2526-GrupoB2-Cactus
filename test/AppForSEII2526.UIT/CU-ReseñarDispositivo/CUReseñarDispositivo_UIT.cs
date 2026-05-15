@@ -42,6 +42,7 @@ namespace AppForSEII2526.UIT.ReviewDevices
         private const string deviceModel3 = "Galaxy S23";
         private SelectDevicesForReviewPO selectDevices;
 
+
         private void Precondition_perform_login()
         {
             // CAMBIA ESTAS CREDENCIALES POR LAS DE TU APLICACIÓN
