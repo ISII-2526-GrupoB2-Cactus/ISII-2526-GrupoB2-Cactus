@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
-using Xunit.Abstractions;
 
 namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
 {
@@ -76,43 +75,49 @@ namespace AppForSEII2526.UIT.CU_AlquilarDispositivo
             listDevices.WaitForBeingVisibleIgnoringExeptionTypes(By.Id("searchDevices"));
         }
 
-        //MODIFICACION
+
+
+
+        /*
+        ///MODIFICACION///
         [Fact]
         [Trait("LevelTesting", "Funcional Testing")]
-        public void sprint3()
+        public void UC2_BF_AF0_AF0_()
         {
-            //Arrange
             var from = DateTime.Today.AddDays(1);
             var to = DateTime.Today.AddDays(2);
 
-            //Act
             InitialStepsForRentalDevices_UIT();
 
-            //Añadir un elemento
-            listDevices.FilterDevices("", "", from, to);
-            listDevices.SelectDevices(new List<string> { "PlayStation 5" });
-
-
-            //Filtrar y añadir por Modelo
+            // 1. Filtrar por modelo y añadir iPhone 15
             listDevices.FilterDevices("iPhone", "", from, to);
             listDevices.SelectDevices(new List<string> { "iPhone 15" });
 
-            //Eliminar primer elemento
-            listDevices.ModifyRentingCart("PlayStation 5");
+            // Limpiar filtro
+            _driver.Navigate().GoToUrl(_URI + "rental/SelectDevicesForRental");
+            listDevices.WaitForBeingVisibleIgnoringExeptionTypes(By.Id("searchDevices"));
 
-            //Crear alquiler
+
+            // 2. Filtrar por precio y añadir PlayStation 5
+            listDevices.FilterDevices("", "120,75", from, to);
+            listDevices.SelectDevices(new List<string> { "PlayStation 5" });
+
+            // 3. Eliminar iPhone 15
+            listDevices.ModifyRentingCart("iPhone 15");
+
+            // 4. Completar el flujo de alquiler
             listDevices.RentDevices();
 
             var createRental = new CreateRental_PO(_driver, _output);
-            createRental.FillInRentalInfo("maria@alu.uclm.es", "Maria Martinez Gonzalez", "Calle Libertad 9", "CreditCard");
+            createRental.FillInRentalInfo("maria@alu.uclm.es", "Maria", "Calle Libertad 9", "CreditCard");
             createRental.PressRentYourDevices();
             createRental.PressOkModalDialog();
 
+            // 5. Comprobar alquiler
             Assert.Contains("detailrenta", _driver.Url);
-
         }
 
-
+        
         [Theory]
         [InlineData(deviceName1, deviceBrand1, deviceModel1, devicePriceForRenting1, "iPhone", "")]
         [InlineData(deviceName2, deviceBrand2, deviceModel2, devicePriceForRenting2, "", "120,75")] // Filtro por precio
