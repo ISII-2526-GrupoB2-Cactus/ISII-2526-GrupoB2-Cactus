@@ -37,7 +37,45 @@ namespace AppForSEII2526.UIT.ReviewDevices
 
         private void Precondition_perform_login()
         {
-            Perform_login("maria@alu.uclm.es", "Password1234%");
+            // CAMBIA ESTAS CREDENCIALES POR LAS DE TU APLICACIÓN
+            // Perform_login("Maria@ejemplo.com", "Password1234!");
+        }*/
+
+        /*private void InitialStepsForReviewDevices_UIT()
+        {
+            Precondition_perform_login();
+            // Navegar a la página EXACTA de tu aplicación
+            _driver.Navigate().GoToUrl(_URI + "review/selectDevicesForReview");
+            // Esperar carga inicial (igual que tus profesoras)
+            System.Threading.Thread.Sleep(3000);
+        }*/
+
+
+
+        [Fact]
+        [Trait("LevelTesting", "Funcional Testing")]
+        public void UC2_2_AF1_filteringbyYear()
+        {
+            //Arrange
+            // Filtrar por año 2023 debería mostrar 3 dispositivos ordenados alfabéticamente por nombre:
+            // Galaxy S23, iPhone 15, PlayStation 5
+
+            var expectedDevices = new List<string[]> {
+                new string[] { deviceName2, deviceBrand2, deviceModel2, deviceYear2, deviceColor2, "Añadir" },
+                new string[] { deviceName1, deviceBrand1, deviceModel1, deviceYear1, deviceColor1, "Añadir" },
+                new string[] { deviceName3, deviceBrand3, deviceModel3, deviceYear3, deviceColor3, "Añadir" },
+            };
+
+            //Act
+            //InitialStepsForReviewDevices_UIT();
+
+            // Filtrar: Marca = "Todas", Año = "2023"
+            selectDevices.FilterDevices("Todas", "2023");
+
+            //Assert            
+            Assert.True(selectDevices.CheckListOfDevices(expectedDevices),
+                "Error: Los dispositivos filtrados por año 2023 no coinciden con los esperados");
+
         }
 
         private void InitialStepsForReviewDevice_UIT()
