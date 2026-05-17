@@ -1,0 +1,188 @@
+﻿@page "/review/selectDevicesForReview"
+@using Microsoft.AspNetCore.Authorization
+@using AppForSEII2526.Web.API
+@inject AppForSEII2526APIClient apiclient
+@inject ILogger<SelectDevicesForReview> logger
+@inject ReviewStateContainer reviewState
+@inject NavigationManager navigation
+@implements IAsyncDisposable
+
+@*@attribute [Authorize]*@
+
+<h3>Select Devices For Review</h3>
+
+<div class="container-fluid">
+    <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
+        <p id="ErrorsShown">Errors: @errors</p>
+    </div>
+    <div class="row">
+        <div class="col-8">
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Marca</span>
+                        <select class="form-select" aria-label="Default select" @bind="selectedBrand" id="selectBrand">
+                            <option value="All" selected>Todas</option>
+                            @foreach (string brandName in brandsNames)
+                            {
+                                <option value="@brandName" id="brandNameSelected_@brandName">@brandName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Año</span>
+                        <select class="form-select" aria-label="Default select" @bind="selectedYear" id="selectYear">
+                            <option value="0" selected>Todos</option>
+                            @foreach (int year in availableYears)
+                            {
+                                <option value="@year" id="yearSelected_@year">@year</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-primary" @onclick="SearchDevices" id="searchDevices">Buscar dispositivos</button>
+                </div>
+            </div>
+            <div class="row">
+                @if (devices == null)
+                {
+                    <p>Cargando dispositivos....</p>
+                }
+                else
+                {
+                    <div class="mh-100 table-responsive">
+                        <table class="table table-condensed table-hover" id="TableOfDevices">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Año</th>
+                                    <th>Color</th>
+                                    <th>Reseñar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var device in devices)
+                                {
+                                    <tr id="DeviceData_@device.Id">
+                                        <td>@device.Name</td>
+                                        <td>@device.Brand</td>
+                                        <td>@device.Model</td>
+                                        <td>@device.Year</td>
+                                        <td>@device.Color</td>
+                                        <td>
+                                            <button class="btn btn-outline-secondary" id="deviceToReview_@device.Id" @onclick="@(() => AddDevice(device))">Añadir</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-2" hidden="@hideReviewCart">
+            <div class="row">
+                <h3>Carrito de reseñas</h3>
+            </div>
+            @foreach (ReviewItemDTO item in review.ReviewItems)
+            {
+                <div class="row">
+                    <button type="button" class="btn btn-light" id="removeDevice_@item.Id" @onclick="@(() => RemoveReviewItem(item))">x @item.Name</button>
+                </div>
+            }
+            <div class="row">
+                <button type="button" class="btn btn-primary" id="createReviewButton" @onclick=@CreateReview>Crear reseña</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string selectedBrand = "All";
+    private int selectedYear = 0;
+    private ICollection<string>? brandsNames = new List<string>();
+    private ICollection<int>? availableYears = new List<int>();
+    private bool hideReviewCart { get { return review.ReviewItems.Count == 0; } }
+    private ICollection<DeviceForReviewDTO>? devices;
+    private bool hideErrors { get { return errors.Length == 0; } }
+    private string errors = "";
+
+    private ReviewForCreateDTO review => reviewState.Review;
+
+    private async Task AddDevice(DeviceForReviewDTO device)
+    {
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] AddDevice llamado para: {device.Name}");
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] Items antes: {review.ReviewItems.Count}");
+        
+        reviewState.AddDeviceToReview(device);
+        
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] Items después: {review.ReviewItems.Count}");
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] hideReviewCart: {hideReviewCart}");
+        
+        await Task.Delay(100);
+        StateHasChanged();
+        
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] StateHasChanged llamado");
+    }
+
+    private async Task RemoveReviewItem(ReviewItemDTO item)
+    {
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] RemoveReviewItem llamado para: {item.Name}");
+        reviewState.RemoveReviewItem(item);
+        await Task.Delay(100);
+        StateHasChanged();
+    }
+
+    public async void SearchDevices()
+    {
+        string? brandToFilter = selectedBrand == "All" ? null : selectedBrand;
+        int? yearToFilter = selectedYear == 0 ? null : selectedYear;
+
+        try
+        {
+            devices = await apiclient.GetDevicesForReviewAsync(yearToFilter, brandToFilter);
+            errors = "";
+        }
+        catch (ApiException ex)
+        {
+            logger.LogError($"{DateTime.Now} Error: {ex}");
+            errors = "Error al conectar con el sistema";
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        reviewState.OnChange += StateHasChanged;
+        
+        try
+        {
+            var allDevices = await apiclient.GetDevicesForReviewAsync(null, null);
+            brandsNames = allDevices.Select(d => d.Brand).Distinct().OrderBy(b => b).ToList();
+            availableYears = allDevices.Select(d => d.Year).Distinct().OrderByDescending(y => y).ToList();
+        }
+        catch (ApiException ex)
+        {
+            if (brandsNames == null) brandsNames = new List<string>() { "Todas" };
+            if (availableYears == null) availableYears = new List<int>() { 0 };
+            logger.LogError($"{DateTime.Now} Error! Hubo un error al conectar con el servicio GetDevicesForReviewAsync");
+        }
+
+        SearchDevices();
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        reviewState.OnChange -= StateHasChanged;
+    }
+
+    private void CreateReview()
+    {
+        navigation.NavigateTo("/reviews/createreview");
+    }
+}

@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AppForSEII2526.API.Models.Device">
+    <Position X="0.5" Y="0.75" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="AppForSEII2526.API.Models.Device.QualityType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Models\Device.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <AssociationLine Name="Model" Type="AppForSEII2526.API.Models.Model" FixedToPoint="true">
+      <Path>
+        <Point X="2" Y="4.5" />
+        <Point X="3.25" Y="4.5" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAASAAQCBABgAABAAQAAAAQAAAAgAAAAAAgAgBABAAA=</HashCode>
+      <FileName>Models\Device.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Model" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="ReviewItems" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.Model">
+    <Position X="3.25" Y="3.75" Width="1.5" />
+    <AssociationLine Name="Devices" Type="AppForSEII2526.API.Models.Device" FixedToPoint="true">
+      <Path>
+        <Point X="3.25" Y="4.125" />
+        <Point X="2" Y="4.125" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Model.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Devices" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.ReviewItem">
+    <Position X="3.25" Y="0.75" Width="1.5" />
+    <AssociationLine Name="Device" Type="AppForSEII2526.API.Models.Device" FixedToPoint="true">
+      <Path>
+        <Point X="3.25" Y="1.5" />
+        <Point X="2" Y="1.5" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAEAEACAAAAAIAA=</HashCode>
+      <FileName>Models\ReviewItem.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Device" />
+      <Property Name="Review" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.Review">
+    <Position X="6" Y="0.75" Width="1.5" />
+    <AssociationLine Name="ApplicationUser" Type="AppForSEII2526.API.Models.ApplicationUser" FixedToPoint="true">
+      <Path>
+        <Point X="7.5" Y="1.263" />
+        <Point X="8.5" Y="1.263" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAQAAQAAAAAAAAAIBAAEAAAABAAAAA=</HashCode>
+      <FileName>Models\Review.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ApplicationUser" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="ReviewItems" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.ApplicationUser">
+    <Position X="8.5" Y="0.75" Width="1.5" />
+    <AssociationLine Name="Review" Type="AppForSEII2526.API.Models.Review" FixedToPoint="true">
+      <Path>
+        <Point X="8.5" Y="1.75" />
+        <Point X="7.5" Y="1.75" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAEAAAQAAAAAAAAAAAAAAAAAACAAQAAAAE=</HashCode>
+      <FileName>Models\ApplicationUser.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Review" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -11,6 +11,9 @@
 *.sln.docstates
 *.env
 
+# Data Protection keys (antiforgery tokens) - each developer should have their own
+**/keys/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

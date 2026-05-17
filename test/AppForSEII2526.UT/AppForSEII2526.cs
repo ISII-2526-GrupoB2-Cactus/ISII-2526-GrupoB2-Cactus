@@ -1,9 +1,8 @@
-﻿namespace AppForMovies.UT {
-    public class AppForMovies4SqliteUT {
+﻿namespace AppForSEII2526{
+    public class AppForSEII2526SqliteUT {
         protected readonly DbConnection _connection;
         protected readonly ApplicationDbContext _context;
         protected readonly DbContextOptions<ApplicationDbContext> _contextOptions;
-
         protected ApplicationDbContext CreateContext() => new(_contextOptions);
         ////This code is the same one as the above line. 
         //ApplicationDBContext CreateContext() { 
@@ -11,7 +10,7 @@
         //}
 
         void Dispose() => _connection.Dispose();
-        public AppForMovies4SqliteUT() {
+        public AppForSEII2526SqliteUT() {
             // Create and open a connection. This creates the SQLite in-memory database, which will persist until the connection is closed
             // at the end of the test (see Dispose below).
             _connection = new SqliteConnection("Filename=:memory:");

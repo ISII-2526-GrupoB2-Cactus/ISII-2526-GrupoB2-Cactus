@@ -29,7 +29,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NSwag.AspNetCore" Version="14.6.3" />
     <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\test\AppForSEII2526.UIT\AppForSEII2526.UIT.csproj" />
+    <ProjectReference Include="..\AppForSEII2526.API\AppForSEII2526.API.csproj" />
   </ItemGroup>
 
 </Project>

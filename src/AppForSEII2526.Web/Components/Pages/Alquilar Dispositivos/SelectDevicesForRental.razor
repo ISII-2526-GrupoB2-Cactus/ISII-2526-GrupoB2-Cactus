@@ -1,0 +1,153 @@
+﻿@page "/rental/SelectDevicesForRental"
+
+@using AppForSEII2526.Web.API
+@using AppForSEII2526.Web.Components.Shared
+@using Microsoft.AspNetCore.Authorization
+
+@inject ILogger<SelectDevicesForRental> logger
+@inject AppForSEII2526APIClient apiclient
+@inject RentalStateContainer rentalState
+@inject NavigationManager navigation
+
+@*@attribute [Authorize]*@
+
+<h3>Seleccionar dispositivos</h3>
+
+<div class="container-fluid">
+    <div class="row alert alert-danger" role="alert" hidden="@hideErrors">
+        <p id="ErrorsShown">Errors: @errors</p>
+    </div>
+
+    <div class="row">
+        <div class="col-8">
+            <div class="row">
+                <div class="col">
+                    <input type="text" id="inputModel" @bind="deviceModel" class="form-control" placeholder="Model" />
+                </div>
+                <div class="col">
+                    <input type="number" id="inputPrice" @bind="priceForRent" class="form-control" placeholder="Price" />
+                </div>
+                <div class="col">
+                    <InputDate id="fromDate" @bind-Value="From" />
+                </div>
+                <div class="col">
+                    <InputDate id="toDate" @bind-Value="To" />
+                </div>
+                <div class="col">
+                    <button class="btn btn-primary" id="searchDevices" @onclick="SearchDevices">
+                        Search devices
+                    </button>
+                </div>
+            </div>
+
+            <table class="table" id="TableOfDevices">
+                <tbody>
+                    @if (devices != null)
+                    {
+                        @foreach (var device in devices)
+                        {
+                            <tr>
+                                <td>@device.Name</td>
+                                <td>@device.Brand</td>
+                                <td>@device.Model</td>
+                                <td>@device.PriceForRent</td>
+                                <td>
+                                    <button id="deviceToRent_@device.Name.Replace(" ", "_")"
+                                            class="btn btn-outline-secondary"
+                                            @onclick="@(() => AddDevice(device))">
+                                        Add
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-2" hidden="@hideRentingCart">
+            <h3>Shopping Cart</h3>
+
+            @foreach (RentalItemDTO item in rental.RentalItems)
+            {
+                <button class="btn btn-light"
+                        id="removeDevice_@item.Name.Replace(" ", "_")"
+                        @onclick="@(() => RemoveRentalItem(item))">
+                    x @item.Name - @item.PriceForRent €
+                </button>
+            }
+
+            <button class="btn btn-primary"
+                    id="purchaseDeviceButton"
+                    @onclick="RentDevices">
+                Rent devices
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ICollection<DeviceParaAlquilarDTO>? devices;
+    private string? deviceModel;
+    private double? priceForRent;
+    private string errors = "";
+
+    private bool hideErrors => errors.Length == 0;
+    private bool hideRentingCart => rental.RentalItems.Count == 0;
+
+    private RentalForCreateDTO rental => rentalState.Rental;
+
+    private DateTime From
+    {
+        get => rental.RentalDateFrom.UtcDateTime;
+        set => rental.RentalDateFrom = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+    }
+
+    private DateTime To
+    {
+        get => rental.RentalDateTo.UtcDateTime;
+        set => rental.RentalDateTo = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+    }
+
+    private void AddDevice(DeviceParaAlquilarDTO device)
+    {
+        rentalState.AddDeviceToRental(device);
+    }
+
+    private void RemoveRentalItem(RentalItemDTO item)
+    {
+        rentalState.RemoveRentalItemToRent(item);
+    }
+
+    public async Task SearchDevices()
+    {
+        errors = "";
+        
+        // Validate dates
+        if (From < DateTime.Today || To < DateTime.Today)
+        {
+            errors = "Your rental period must be later";
+            return;
+        }
+        
+        if (To <= From)
+        {
+            errors = "Your rental must end after than its starts";
+            return;
+        }
+        
+        devices = await apiclient.GetDevicesForRentalAsync(deviceModel, priceForRent);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        rental.RentalDateFrom = DateTimeOffset.UtcNow.AddDays(1);
+        rental.RentalDateTo = DateTimeOffset.UtcNow.AddDays(2);
+        await SearchDevices();
+    }
+
+    private void RentDevices()
+    {
+        navigation.NavigateTo("/rentals/createrental");
+    }
+}
