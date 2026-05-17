@@ -416,3 +416,5 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+/src/AppForSEII2526.Web/keys/key-2244bd97-e85c-4a7b-8d9f-fdaf5d5cc1d8.xml
+/src/AppForSEII2526.Web/keys/key-ab69bfec-e67e-45be-9585-27ae495bfe30.xml
