@@ -39,8 +39,7 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
         [Display(Name = "Pais")]
         public string CustomerCountry { get; set; } = string.Empty;
 
-        
-        [EmailAddress]
+        [StringLength(50, ErrorMessage = "Nombre de usuario no puede ser mayor que 50 caracteres.", MinimumLength = 3)]
         [Display(Name = "Nombre de usuario")]
         public string? CustomerUserName { get; set; } = string.Empty;
 

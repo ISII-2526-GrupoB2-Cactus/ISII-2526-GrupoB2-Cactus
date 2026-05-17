@@ -1,4 +1,4 @@
-﻿@page "/review/detailReview"
+﻿@page "/review/detailreview"
 @using Microsoft.AspNetCore.Authorization
 @using AppForSEII2526.Web.API
 @inject AppForSEII2526APIClient apiclient
@@ -17,11 +17,11 @@ else
     <table class="table table-borderless table-sm">
         <tr>
             <th>Nombre del Cliente</th>
-            <td id="CustomerName">@review.CustomerUserName</td>
+            <td id="NameSurname">@review.CustomerUserName</td>
         </tr>
         <tr>
             <th>País</th>
-            <td id="CustomerCountry">@review.CustomerCountry</td>
+            <td id="Country">@review.CustomerCountry</td>
         </tr>
         <tr>
             <th>Título de la reseña</th>
@@ -45,7 +45,7 @@ else
 
     <h4>Dispositivos reseñados</h4>
 
-    <table class="table" id="ReviewedDevices">
+    <table class="table" id="ReviewdDevices">
         <thead>
             <tr>
                 <th scope="col">Nombre</th>

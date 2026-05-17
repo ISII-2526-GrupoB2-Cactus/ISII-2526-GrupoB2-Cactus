@@ -100,30 +100,31 @@ namespace AppForSEII2526.API.Controllers
 
                         if (device != null)
                         {
-                            double itemPrice = (double)item.PriceForPurchase * item.Quantity;
-                            totalPrice += itemPrice;
-                            totalQuantity += item.Quantity;
+                            
+                                double itemPrice = (double)item.PriceForPurchase * item.Quantity;
+                                totalPrice += itemPrice;
+                                totalQuantity += item.Quantity;
 
-                            seleccionados.Add(new PurchaseItem
-                            {
-                                DeviceId = device.Id,
-                                Quantity = item.Quantity,
-                                Description = item.Description,
-                                Price = (double)item.PriceForPurchase
-                            });
+                                seleccionados.Add(new PurchaseItem
+                                {
+                                    DeviceId = device.Id,
+                                    Quantity = item.Quantity,
+                                    Description = item.Description,
+                                    Price = (double)item.PriceForPurchase
+                                });
+                           
                         }
                         else
                         {
                             return BadRequest($"El dispositivo con ID {item.DeviceID} no está disponible.");
                         }
 
-                        if (device.Brand.Contains("Xiaomi") || device.Brand.Contains("Huawei") || device.Model.Name.Contains("Huawei") || device.Model.Name.Contains("Xiaomi"))
+                 
+
+                        if (device.Brand.StartsWith("Motorola") || device.Brand.StartsWith("Nokia") || device.Model.Name.StartsWith("Motorola") || device.Model.Name.StartsWith("Nokia"))
                         {
-                            return BadRequest("Error: las tecnologías de estas marcas ya no están disponibles, siguiendo recomendaciones de las autoridades competentes en materia de seguridad");
+                            return BadRequest($"Error: las tecnologias de estas marcas estan temporalmente no disponibles");
                         }
-
-                        
-
 
                     }
                     else

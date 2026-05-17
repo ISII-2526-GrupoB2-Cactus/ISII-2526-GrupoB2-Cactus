@@ -40,8 +40,8 @@ namespace AppForSEII2526.API.Controllers
                         .ThenInclude(d => d.Model)
                 .Include(r => r.ApplicationUser)
                 .Select(r => new ReviewDetailDTO(
-                    r.ApplicationUser.CustomerUserName,
-                    r.ApplicationUser.CustomerCountry,
+                    r.CustomerId,
+                    r.ApplicationUser != null ? r.ApplicationUser.CustomerCountry : "",
                     r.ReviewTitle,
                     r.DateOfReview,
                     r.ReviewItems
@@ -84,12 +84,34 @@ namespace AppForSEII2526.API.Controllers
             if (reviewForCreate.ReviewItems.Count == 0)
                 ModelState.AddModelError("ReviewItems", "Error! Debes incluir un dispositivo para reseñar");
 
-            var user = _context.Users.FirstOrDefault(au => au.UserName == reviewForCreate.CustomerUserName);
-            if (user == null)
-                ModelState.AddModelError("ReviewApplicationUser", "Error! Usuario no registrado");
+            // Obtener el usuario autenticado desde el contexto
+            // Si no está disponible, usar el CustomerUserName del DTO (que Blazor ya sobrescribió con el usuario autenticado)
+            var authenticatedUserName = User.Identity?.Name ?? reviewForCreate.CustomerUserName;
+            
+            if (string.IsNullOrEmpty(authenticatedUserName))
+                ModelState.AddModelError("ReviewApplicationUser", "Error! Usuario no autenticado");
 
             if (ModelState.ErrorCount > 0)
                 return BadRequest(new ValidationProblemDetails(ModelState));
+
+            // Buscar el usuario por Email o UserName
+            var user = _context.Users.FirstOrDefault(au => au.Email == authenticatedUserName || au.UserName == authenticatedUserName);
+            // Si no se encuentra, crear un usuario temporal (el sistema debería tener al usuario si está autenticado)
+            if (user == null)
+            {
+                _logger.LogWarning($"Usuario {authenticatedUserName} no encontrado en BD, se usará la información del DTO");
+                // Continuamos sin usuario específico, usaremos los datos del DTO
+            }
+            else
+            {
+                // Actualizar el país del usuario si es diferente
+                if (!string.IsNullOrEmpty(reviewForCreate.CustomerCountry) && 
+                    user.CustomerCountry != reviewForCreate.CustomerCountry)
+                {
+                    user.CustomerCountry = reviewForCreate.CustomerCountry;
+                    _context.Users.Update(user);
+                }
+            }
 
             // Obtener dispositivos 
             var deviceIds = reviewForCreate.ReviewItems.Select(ri => ri.Id).ToList();
@@ -108,7 +130,7 @@ namespace AppForSEII2526.API.Controllers
 
             
             Review review = new Review(
-                customerId: reviewForCreate.CustomerUserName,
+                customerId: authenticatedUserName,
                 dateOfReview: DateTime.Now,
                 overallRating: reviewForCreate.AverageRating,
                 reviewTitle: reviewForCreate.ReviewTitle,

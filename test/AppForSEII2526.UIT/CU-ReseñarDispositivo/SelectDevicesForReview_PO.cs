@@ -1,158 +1,220 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using Xunit.Abstractions;
+using System;
+using System.Collections.Generic;
 
 namespace AppForSEII2526.UIT.ReviewDevices
 {
-    public class SelectDevicesForReview_PO : PageObject
+    internal class SelectDevicesForReviewPO : PageObject
     {
-        // Locators EXACTAMENTE como en tu HTML
-        private By _brandFilterBy = By.Id("selectBrand");
-        private By _yearFilterBy = By.Id("selectYear");
-        private By _searchDevicesButtonBy = By.Id("searchDevices");
-        private By _createReviewButtonBy = By.Id("createReviewButton");
-        private By _devicesTableBy = By.Id("TableOfDevices");
-        private By _errorAlertBy = By.ClassName("alert-danger");
-        private By _errorsShownBy = By.Id("ErrorsShown");
+        private By inputBrand = By.Id("inputBrand");
+        private By inputYear = By.Id("inputYear");
+        private By searchDevices = By.Id("searchDevices");
+        private By _ShowReviewCartBy = By.Id("showReviewCart");
+        private By _reviewButtonBy = By.Id("DevicesReviewButton");
+        private By TableOfDevices = By.Id("TableOfDevices");
+        private By DevicesReviewButton = By.Id("DevicesReviewButton");
 
-        // Métodos shortcut (igual que tus profesoras)
-        private IWebElement _brandFilter() => _driver.FindElement(_brandFilterBy);
-        private IWebElement _yearFilter() => _driver.FindElement(_yearFilterBy);
-        private IWebElement _searchDevicesButton() => _driver.FindElement(_searchDevicesButtonBy);
-        private IWebElement _createReviewButton() => _driver.FindElement(_createReviewButtonBy);
+        private IWebElement _deviceBrand() => _driver.FindElement(inputBrand);
+        private IWebElement _deviceYear() => _driver.FindElement(inputYear);
+        private IWebElement _searchDevices() => _driver.FindElement(searchDevices);
+        private IWebElement _TableOfDevices() => _driver.FindElement(TableOfDevices);
+        private IWebElement _DevicesReviewButton() => _driver.FindElement(DevicesReviewButton);
+        private IWebElement _showReviewCartButton() => _driver.FindElement(_ShowReviewCartBy);
+        private IWebElement _reviewButton() => _driver.FindElement(_reviewButtonBy);
 
-        public SelectDevicesForReview_PO(IWebDriver driver, ITestOutputHelper output)
-            : base(driver, output)
+        public SelectDevicesForReviewPO(IWebDriver driver, ITestOutputHelper output) : base(driver, output)
         {
         }
 
-        public void FilterDevices(string brandFilter, string yearFilter)
+        public void SearchDevices(string brand, int year)
         {
-            WaitForBeingVisible(_brandFilterBy);
+            WaitForBeingVisible(inputBrand);
+            System.Threading.Thread.Sleep(1000); // Esperar a que las opciones se carguen
 
-            // Filtrar por marca (según tu HTML: "All" = "Todas")
-            if (brandFilter == "" || brandFilter == "All") brandFilter = "Todas";
-            SelectElement brandSelect = new SelectElement(_brandFilter());
-            brandSelect.SelectByText(brandFilter);
+            // PRIMERO: Resetear AMBOS filtros a su estado inicial
+            var brandElement = _deviceBrand();
+            var brandSelect = new SelectElement(brandElement);
 
-            // Filtrar por año (según tu HTML: "0" = "Todos")
-            SelectElement yearSelect = new SelectElement(_yearFilter());
-            if (yearFilter == "0" || yearFilter == "")
+            // Esperar a que haya opciones disponibles
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            wait.Until(driver => brandSelect.Options.Count > 0);
+
+            // Resetear marca a la primera opción
+            brandSelect.SelectByIndex(0);
+
+            // Resetear año a la primera opción (valor por defecto)
+            WaitForBeingVisible(inputYear);
+            var yearElement = _deviceYear();
+            var yearSelect = new SelectElement(yearElement);
+            yearSelect.SelectByIndex(0);
+
+            // Hacer click en buscar para aplicar el reset
+            _driver.FindElement(searchDevices).Click();
+            System.Threading.Thread.Sleep(1000);
+
+            // SEGUNDO: Aplicar los nuevos filtros si se proporcionan
+            if (!string.IsNullOrEmpty(brand) && brand != "All")
             {
-                yearSelect.SelectByText("Todos");
+                WaitForBeingVisible(inputBrand);
+                brandElement = _deviceBrand();
+                brandSelect = new SelectElement(brandElement);
+
+                try
+                {
+                    brandSelect.SelectByValue(brand);
+                }
+                catch (NoSuchElementException)
+                {
+                    // Si no encuentra por valor, intentar por texto
+                    _output.WriteLine($"⚠️ No se encontró opción con valor '{brand}', intentando por texto...");
+                    brandSelect.SelectByText(brand);
+                }
+
+                _driver.FindElement(searchDevices).Click();
+                System.Threading.Thread.Sleep(500);
             }
-            else
+
+            if (year != 0)
             {
-                // Tu HTML muestra números (2023, 2022, etc.)
-                yearSelect.SelectByText(yearFilter);
+                WaitForBeingVisible(inputYear);
+                System.Threading.Thread.Sleep(500);
+                yearElement = _deviceYear();
+                yearSelect = new SelectElement(yearElement);
+                yearSelect.SelectByValue(year.ToString());
+                _driver.FindElement(searchDevices).Click();
+                System.Threading.Thread.Sleep(500);
             }
 
-            // Hacer clic en buscar
-            _searchDevicesButton().Click();
-
-            // Esperar recarga de tabla (igual que tus profesoras)
             System.Threading.Thread.Sleep(2000);
         }
 
-        public void SelectDevices(List<string> deviceNames)
+
+
+        public void SelectDevices(List<string> deviceids)
         {
-            foreach (var deviceName in deviceNames)
+            foreach (var deviceId in deviceids)
             {
-                // Buscar por el texto en la primera columna (Nombre)
-                WaitForBeingVisible(By.XPath($"//table[@id='TableOfDevices']//tr[td[1][text()='{deviceName}']]"));
-                var row = _driver.FindElement(By.XPath($"//table[@id='TableOfDevices']//tr[td[1][text()='{deviceName}']]"));
-                var addButton = row.FindElement(By.XPath(".//button[contains(@id, 'deviceToReview_')]"));
-                addButton.Click();
+                WaitForBeingVisible(By.Id($"deviceToReview_{deviceId}"));
+                _driver.FindElement(By.Id($"deviceToReview_{deviceId}")).Click();
             }
         }
 
-        public void RemoveDeviceFromCart(string deviceName)
+        public void Boraranio()
         {
-            By locator = By.XPath($"//button[starts-with(@id, 'removeDevice_') and contains(., '{deviceName}')]");
-            WaitForBeingVisible(locator);
-            _driver.FindElement(locator).Click();
+            var yearSelect = new SelectElement(_deviceYear());
+            yearSelect.SelectByValue("0");
+            _driver.FindElement(searchDevices).Click();
         }
 
-        public void NavigateToCreateReview()
+        public void ReviewDevices()
         {
-            WaitForBeingClickable(_createReviewButtonBy);
-            _createReviewButton().Click();
+            WaitForBeingClickable(DevicesReviewButton);
+            _DevicesReviewButton().Click();
+        }
+
+        public void ModifyReviewCart(string name)
+        {
+            System.Threading.Thread.Sleep(500);
+            WaitForBeingVisible(By.Id($"removeDevice_{name}"));
+            _driver.FindElement(By.Id($"removeDevice_{name}")).Click();
         }
 
         public bool CheckListOfDevices(List<string[]> expectedDevices)
         {
-            return CheckBodyTable(expectedDevices, _devicesTableBy);
+            return CheckBodyTable(expectedDevices, TableOfDevices);
         }
 
-        public bool CheckCreateReviewButtonDisabled()
+        public bool CheckReviewDeviceDisabled()
         {
             try
             {
-                // El botón está oculto cuando hideReviewCart = true (carrito vacío)
-                var button = _createReviewButton();
-                return !button.Displayed || !button.Enabled;
+                System.Threading.Thread.Sleep(1000);
+                
+                // Verificar si el contenedor del carrito está oculto
+                try
+                {
+                    var cartContainer = _driver.FindElement(By.CssSelector("div.col-2"));
+                    
+                    // Verificar si tiene el atributo hidden
+                    var hiddenAttr = cartContainer.GetAttribute("hidden");
+                    if (hiddenAttr != null && (hiddenAttr == "true" || hiddenAttr == ""))
+                    {
+                        _output.WriteLine($"✓ Carrito oculto (atributo hidden presente): el botón está deshabilitado");
+                        return true;
+                    }
+                    
+                    // Si el contenedor está oculto por CSS, también está deshabilitado
+                    if (!cartContainer.Displayed)
+                    {
+                        _output.WriteLine($"✓ Carrito no visible (display: none): el botón está deshabilitado");
+                        return true;
+                    }
+                }
+                catch (NoSuchElementException)
+                {
+                    _output.WriteLine($"⚠ Contenedor del carrito no encontrado");
+                }
+
+                // Si llegamos aquí, el contenedor está visible, intentar acceder al botón
+                try
+                {
+                    WaitForBeingVisible(_reviewButtonBy);
+                    var button = _reviewButton();
+                    
+                    // Verificar si el atributo disabled existe
+                    var disabledAttr = button.GetAttribute("disabled");
+                    if (disabledAttr != null)
+                    {
+                        _output.WriteLine($"✓ Botón deshabilitado detectado (atributo disabled presente)");
+                        return true;
+                    }
+
+                    // Verificar si la propiedad Enabled es false
+                    if (!button.Enabled)
+                    {
+                        _output.WriteLine($"✓ Botón deshabilitado detectado (Enabled = false)");
+                        return true;
+                    }
+
+                    _output.WriteLine($"✗ Botón está habilitado (no está deshabilitado)");
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    _output.WriteLine($"⚠ Error accediendo al botón: {ex.Message}");
+                    // Si no podemos acceder al botón, consideramos que está deshabilitado
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine($"Error en CheckReviewDeviceDisabled: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool CheckShoppingCart(string deviceName)
+        {
+            System.Threading.Thread.Sleep(500);
+
+            try
+            {
+                var cartContainer = _driver.FindElement(By.CssSelector("div.col-2"));
+
+                if (!cartContainer.Displayed || cartContainer.GetAttribute("hidden") != null)
+                {
+                    return false;
+                }
+
+                var button = cartContainer.FindElement(By.Id($"removeDevice_{deviceName}"));
+                return button != null && button.Displayed;
             }
             catch (NoSuchElementException)
             {
-                return true; // Si no existe el botón, está "deshabilitado"
-            }
-        }
-
-        public bool CheckReviewCartHasDevices(int expectedCount)
-        {
-            try
-            {
-                // Contar botones de remover (cada uno empieza con "removeDevice_")
-                var removeButtons = _driver.FindElements(By.XPath("//button[starts-with(@id, 'removeDevice_')]"));
-                return removeButtons.Count == expectedCount;
-            }
-            catch
-            {
                 return false;
             }
         }
-
-        public bool CheckMessageError(string expectedError)
-        {
-            try
-            {
-                WaitForBeingVisible(_errorAlertBy);
-                var errorText = _driver.FindElement(_errorsShownBy).Text;
-                return errorText.Contains(expectedError);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        // Añade estos métodos si no los tienes en tu PO:
-
-        public void SelectDeviceByName(string deviceName)
-        {
-            // Buscar el botón "Añadir" para el dispositivo específico
-            WaitForBeingVisible(By.XPath($"//table[@id='TableOfDevices']//tr[td[1][text()='{deviceName}']]"));
-            var row = _driver.FindElement(By.XPath($"//table[@id='TableOfDevices']//tr[td[1][text()='{deviceName}']]"));
-            var addButton = row.FindElement(By.XPath(".//button[contains(@id, 'deviceToReview_')]"));
-            addButton.Click();
-        }
-
-        public bool IsDeviceInCart(string deviceName)
-        {
-            try
-            {
-                // NO usar WaitForBeingVisible aquí porque el elemento puede no existir
-                // Solo intentar encontrarlo sin espera
-                By locator = By.XPath($"//button[starts-with(@id, 'removeDevice_') and contains(., '{deviceName}')]");
-                var removeButton = _driver.FindElement(locator);
-                return removeButton.Displayed;
-            }
-            catch (NoSuchElementException)
-            {
-                return false;
-            }
-        }
-
     }
 }

@@ -76,6 +76,7 @@ namespace AppForSEII2526.UIT.CU_CompraDispositivo
         }
 
 
+
         public void RemoveDeviceFromPurchaseCart(int deviceId)
         {
             WaitForBeingClickable(By.Id("removeDevice_" + deviceId));

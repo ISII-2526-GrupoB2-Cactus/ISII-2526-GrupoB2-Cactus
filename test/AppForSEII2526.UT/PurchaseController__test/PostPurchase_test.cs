@@ -144,7 +144,7 @@ namespace AppForSEII2526.UT.PurchaseController_test
         [Fact]
         [Trait("Database", "WithoutFixture")]
         [Trait("LevelTesting", "Unit Testing")]
-        public async Task CreatePurchase_BadRequest_Contains()
+        public async Task CreatePurchase_BadRequest_StartWith()
         {
             // Arrange
             var mock = new Mock<ILogger<PurchaseController>>();
@@ -159,7 +159,7 @@ namespace AppForSEII2526.UT.PurchaseController_test
                 PaymentMethod = PaymentMethod.CreditCard,
                 PurchaseItems = new List<PurchaseItemDTO>
                 {
-                    new PurchaseItemDTO(3, "Xiaomi", "Redmi note", "Blue", 300, 1, "Error: las tecnologías de estas marcas ya no están disponibles, siguiendo recomendaciones de las autoridades competentes en materia de seguridad")
+                    new PurchaseItemDTO(3, "Nokia", "N1", "Blue", 300, 1, "Error: las tecnologías de estas marcas ya no están disponibles.")
                 }
             };
 
